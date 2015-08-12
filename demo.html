@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>at-form-conditions Demo</title>
+
+  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../polymer/polymer.html" />
+  <link rel="import" href="at-rule-conditions.html" />
+</head>
+
+<body>
+  <div>
+    <h2>Conditions Demo - static schema</h2>
+    <at-rule-conditions id="afConditions1">
+    </at-rule-conditions>
+    <div>
+      <h3>Conditions value echo:</h3>
+      <div id="conditionsValueEcho1"></div>
+    </div>
+  </div>
+  <div>
+    <h2>Conditions Demo - json schema</h2>
+    <at-rule-conditions id="afConditions2">
+    </at-rule-conditions>
+    <div>
+      <h3>Conditions value echo:</h3>
+      <div id="conditionsValueEcho2"></div>
+    </div>
+  </div>
+  <div>
+    <h2>Conditions Demo - static schema</h2>
+    <at-rule-conditions id="afConditions3" disabled>
+    </at-rule-conditions>
+    <div>
+      <h3>Conditions value echo:</h3>
+      <div id="conditionsValueEcho3"></div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('WebComponentsReady', function() {
+
+      var enemyOptions = [{
+        label: "",
+        name: ""
+      }, {
+        label: "Enemy1",
+        name: "enemy1"
+      }, {
+        label: "Enemy2",
+        name: "enemy2"
+      }, {
+        label: "Enemy3",
+        name: "enemy3"
+      }, ];
+
+      var config = [{
+          label: "Damage",
+          name: "damageField",
+          operators: [{
+            label: "is equal to",
+            name: "equalTo",
+            fieldType: "text"
+          }, {
+            label: "is not equal to",
+            name: "notEqualTo",
+            fieldType: "text"
+          }, ]
+        }, {
+          label: "Health",
+          name: "healthField",
+          operators: [{
+            label: "is greater than or equal to",
+            name: "greaterThanEqual",
+            fieldType: "text"
+          }, {
+            label: "is less than or equal to",
+            name: "lessThanEqual",
+            fieldType: "text"
+          }, ]
+        }, {
+          label: "Enemy",
+          name: "enemyField",
+          options: enemyOptions,
+          operators: [{
+            label: "is present",
+            name: "present",
+            fieldType: "none"
+          }, {
+            label: "is blank",
+            name: "blank",
+            fieldType: "none"
+          }, {
+            label: "is equal to",
+            name: "equalTo",
+            fieldType: "select"
+          }, {
+            label: "is not equal to",
+            name: "notEqualTo",
+            fieldType: "select"
+          }, ]
+        }];
+        var value =  {
+          "all": [{
+            name: "damageField",
+            operator: "equalTo",
+            value: "50"
+          }, {
+            name: "healthField",
+            operator: "lessThanEqual",
+            value: "49"
+          }]
+        };
+
+      var conditionsValueEcho1 = document.getElementById('conditionsValueEcho1');
+      var afConditions1 = document.getElementById('afConditions1');
+      afConditions1.config = config;
+      afConditions1.value = value;
+
+      afConditions1.addEventListener('value-changed', function(event) {
+        var jsonValue = JSON.stringify(event.detail);
+        conditionsValueEcho1.textContent = jsonValue;
+      });
+
+      var jsonSchema = {
+        "properties": {
+          "id": {
+            "description": "The unique identifier for a product",
+            "type": "number"
+          },
+          "name": {
+            "type": "string",
+            "required": "true",
+            "xinputmode": "required"
+          },
+          "city": {
+            "type": "string",
+            "default": "Default city name"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "activePera": {
+            "type": "boolean",
+            "default": true,
+            "description": "This is description for pera"
+          },
+          "dropdownDemo": {
+            "title": "Drop down demo",
+            "type": "string",
+            "xtype": "enum",
+            "xvaluelist": "XML,JSON",
+            "default": "XML"
+          },
+          "card": {
+            "title": "Card",
+            "type": "string",
+            "xtype": "lookup",
+            "xurl": "http://localhost:2014/Activity/adenin.GateKeeper.Content/card/"
+          }
+        },
+        "required": ["id", "city"]
+      };
+
+      var conditionsValueEcho2 = document.getElementById('conditionsValueEcho2');
+      var afConditions2 = document.getElementById('afConditions2');
+      afConditions2.schema = jsonSchema;
+
+      afConditions2.addEventListener('value-changed', function(event) {
+        var jsonValue = JSON.stringify(event.detail);
+        conditionsValueEcho2.textContent = jsonValue;
+      });
+
+      var conditionsValueEcho3 = document.getElementById('conditionsValueEcho3');
+      var afConditions3 = document.getElementById('afConditions3');
+      afConditions3.config = config;
+      afConditions3.value = value;
+
+      afConditions3.addEventListener('value-changed', function(event) {
+        var jsonValue = JSON.stringify(event.detail);
+        conditionsValueEcho3.textContent = jsonValue;
+      });
+
+    });
+  </script>
+</body>
+
+</html>
