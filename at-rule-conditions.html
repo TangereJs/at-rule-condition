@@ -1,9 +1,8 @@
-<script src="conditions-builder.js" type="text/javascript"></script>
+<link rel="import" href="../at-core-theme/at-core-theme.html" />
 
 <dom-module id="at-rule-conditions">
   <style>
-    #conditionsHtmlContainer,
-    {
+    #conditionsHtmlContainer {
       margin: 20px 0;
     }
 
@@ -50,6 +49,7 @@
     }
   </style>
   <template>
+    <at-core-theme></at-core-theme>
     <div>
       <h4>When these conditions are met ...</h4>
     </div>
@@ -57,6 +57,9 @@
   </template>
   <script>
     'use strict';
+    // ----------------------------------------
+    // at-rule-conditions definition
+    // ----------------------------------------
     Polymer({
       is: 'at-rule-conditions',
       properties: {
@@ -70,7 +73,7 @@
         config: {
           type: Array,
           value: function() {
-            return {};
+            return [];
           },
           observer: 'configChanged',
         },
@@ -78,10 +81,10 @@
           type: Object,
           value: function() {
             return {
-              "all": [] // "all is needed because add rule interface is not displayed if conditions object is empty
+              kind: "all",
+              conditions: [] // "all is needed because add rule interface is not displayed if conditions object is empty
             };
           },
-          notify: true,
           observer: 'valueChanged'
         },
         disabled: {
@@ -91,69 +94,54 @@
         }
       },
       _scopeCssViaAttr: true,
-      pr_conditionsBuilder: undefined,
-      pr_conditionsHtml: undefined,
-      _isInternalUpdate: false,
+      _isReady: false,
       ready: function() {
-
-      },
-      initBuilder: function() {
+        this._isReady = true;
         var self = this;
-        if (!this.pr_conditionsBuilder) {
-          this.pr_conditionsBuilder = RuleEngineHelpers.conditionsBuilder.call(this);
-          this.pr_conditionsBuilder.on('update', function(updateEvent) {
-            // this is microevents solution
-            // conditionsBuilder provides for update event
-            // update event is fired when (sub)conditions are added / removed / modified
-            // self.set('value.conditions', self.collectConditionsData());
-            var tmpValue = self.collectConditionsData();
-
-            // this flag is needed to break the infinite loop
-            // when internal values of the conditions change value just needs to be set
-            // there is no need to recreate the html again
-            self._isInternalUpdate = true;
-            self.value = tmpValue;
-
-            //self.fire('value-changed', self.value);
+        // ------------------------------
+        // attach to the change event of the container and listen to change event
+        // this is part of infrastructure to centralize value updates
+        // and manual triggering of value-change event
+        // ------------------------------
+        this.$.conditionsHtmlContainer.addEventListener('change', function(event) {
+          var target = event.target;
+          var updatePath = target.getAttribute('data-update-path');
+          var value = target.value;
+          self.set(updatePath, value, self.value);
+          self.fire('value-changed', {
+            value: self.value
           });
-        }
+        });
       },
       schemaChanged: function(newValue, oldValue) {
-        if (newValue.properties) {
-          var t_config = this.JSONSchemaToConditionsConfig(newValue, this.defaultConditions);
-          this.config = t_config.fields;
-          this.value = t_config.data;
+        if (!this._isReady) {
+          return;
+        }
+
+        if (this.__conditionsHelperFunctions.isSchemaValid(newValue)) {
+          var t_config = this.__conditionsHelperFunctions.schemaToConfig(newValue);
+          this.config = t_config.value.fields;
+          this.value = t_config.value.data;
         }
       },
-      collectConditionsData: function() {
-        var conditionsData = this.pr_conditionsBuilder.collectData(this.pr_conditionsHtml);
-        return conditionsData;
-      },
       configChanged: function(newValue, oldValue) {
-        this.initBuilder();
-        this.pr_conditionsBuilder.setConditions(newValue);
+        if (!this._isReady) {
+          return;
+        }
+
         this._rebuildConditionsHtml();
       },
       valueChanged: function(newValue, oldValue) {
-        if (this._isInternalUpdate) {
-          // this flag is needed to break the infinite loop
-          // when internal values of the conditions change value just needs to be set
-          // there is no need to recreate the html again
-          this._isInternalUpdate = false;
+        if (!this._isReady) {
           return;
         }
-        this.initBuilder();
-        this.pr_conditionsBuilder.setData(newValue);
+
         this._rebuildConditionsHtml();
       },
       _rebuildConditionsHtml: function() {
-        this.removeAllChildren(this.$.conditionsHtmlContainer);
-        this.pr_conditionsHtml = this.pr_conditionsBuilder.buildConditionsHtml();
-        Polymer.dom(this.$.conditionsHtmlContainer).appendChild(this.pr_conditionsHtml);
-        this.disabledChanged(this.disabled, this.disabled);
-        //this._isInternalUpdate = true;
-        //var tmpValue = this.collectConditionsData();
-        //this.value = tmpValue;
+        Polymer.dom(this.$.conditionsHtmlContainer).innerHTML = '';
+        this.buildConditionsHtml(this.$.conditionsHtmlContainer, this.config, this.value);
+        this.disabledChanged(this.disabled);
       },
       disabledChanged: function(newValue, oldValue) {
         var
@@ -168,398 +156,49 @@
           aElements = [],
           tmp;
 
-        if (this.pr_conditionsHtml !== '') {
-          tmp = this.pr_conditionsHtml.querySelectorAll('select');
+        if (!this._isReady) {
+          return;
+        }
+        var queryRoot = Polymer.dom(this.$.conditionsHtmlContainer);
+          tmp = queryRoot.querySelectorAll('select');
           if (tmp.length > 0) {
             this.pushArray1IntoArray2(tmp, selectElements);
           }
-          tmp = this.pr_conditionsHtml.querySelectorAll('input');
+          tmp = queryRoot.querySelectorAll('input');
           if (tmp.length > 0) {
             this.pushArray1IntoArray2(tmp, inputElements);
           }
-          tmp = this.pr_conditionsHtml.querySelectorAll('button');
+          tmp = queryRoot.querySelectorAll('button');
           if (tmp.length > 0) {
             this.pushArray1IntoArray2(tmp, aElements);
           }
-        }
 
         if (newValue) {
           for (selectIndex = 0; selectIndex < selectElements.length; selectIndex += 1) {
             selectElement = selectElements[selectIndex];
-            selectElement.setAttribute('disabled', 'disabled');
+            Polymer.dom(selectElement).setAttribute('disabled', 'disabled');
           }
           for (inputIndex = 0; inputIndex < inputElements.length; inputIndex += 1) {
             inputElement = inputElements[inputIndex];
-            inputElement.setAttribute('disabled', 'disabled');
+                        Polymer.dom(inputElement).setAttribute('disabled', 'disabled');
           }
           for (aIndex = 0; aIndex < aElements.length; aIndex += 1) {
             aElement = aElements[aIndex];
-            aElement.setAttribute('disabled', 'disabled');
+            Polymer.dom(aElement).setAttribute('disabled', 'disabled');
           }
         } else {
           for (selectIndex = 0; selectIndex < selectElements.length; selectIndex += 1) {
             selectElement = selectElements[selectIndex];
-            selectElement.removeAttribute('disabled');
+            Polymer.dom(selectElement).removeAttribute('disabled');
           }
           for (inputIndex = 0; inputIndex < inputElements.length; inputIndex += 1) {
             inputElement = inputElements[inputIndex];
-            inputElement.removeAttribute('disabled');
+            Polymer.dom(inputElement).removeAttribute('disabled');
           }
           for (aIndex = 0; aIndex < aElements.length; aIndex += 1) {
             aElement = aElements[aIndex];
-            aElement.removeAttribute('disabled');
+            Polymer.dom(aElement).removeAttribute('disabled');
           }
-        }
-      },
-
-      capitalize: function(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-      },
-
-      JSONSchemaToConditionsConfig: function(schema, defaultConditions) {
-        var result = {
-          fields: [],
-          data: {
-            "all": []
-          }
-        };
-
-        var
-          entry,
-          properties = schema.properties;
-
-        for (entry in properties) {
-          var entryType = properties[entry].type;
-          var defaultValue = properties[entry].default !== undefined ? properties[entry].default : '';
-
-          var newField = {
-            label: this.capitalize(entry),
-            //          name: entry + 'Field',
-            name: entry,
-            operators: []
-          };
-          if (properties[entry].options !== undefined) {
-            newField.options = properties[entry].options;
-          }
-          result.fields.push(newField);
-          switch (entryType) {
-            case "string":
-              newField.operators = [{
-                label: "is present",
-                name: "present",
-                fieldType: "none"
-              }, {
-                label: "is blank",
-                name: "blank",
-                fieldType: "none"
-              }, {
-                label: "is equal to",
-                name: "equalTo",
-                fieldType: "text"
-              }, {
-                label: "is not equal to",
-                name: "notEqualTo",
-                fieldType: "text"
-              }, {
-                label: "includes",
-                name: "includes",
-                fieldType: "text"
-              }, {
-                label: "matches regex",
-                name: "matchesRegex",
-                fieldType: "text"
-              }, {
-                label: "is less than",
-                name: "lessThan",
-                fieldType: "text"
-              }, {
-                label: "is less than or equal to",
-                name: "lessThanEqual",
-                fieldType: "text"
-              }, {
-                label: "is greater than",
-                name: "greaterThan",
-                fieldType: "text"
-              }, {
-                label: "is greater than or equal to",
-                name: "greaterThanEqual",
-                fieldType: "text"
-              }];
-              var value;
-              if (properties[entry].xtype === "enum" && properties[entry].xvaluelist !== undefined) {
-                newField.operators[2].fieldType = "select";
-                newField.operators[3].fieldType = "select";
-
-                newField.options = [];
-                var valueList = properties[entry].xvaluelist.split(',');
-                for (value in valueList) {
-                  var trimValue = valueList[value].trim();
-                  newField.options.push({
-                    name: trimValue,
-                    label: trimValue
-                  });
-                }
-              }
-
-              var compareOptions = this.getCopyValueFieldOptionsFor(entry, properties);
-              if (compareOptions.fields[0].options.length > 0) {
-                newField.operators[2].fieldType = "select";
-                newField.operators[3].fieldType = "select";
-
-                if (newField.options !== undefined) {
-                  newField.options = [{
-                    name: "static",
-                    label: "Static",
-                    fieldType: "select",
-                    options: newField.options
-                  }, {
-                    name: "field",
-                    label: "Field",
-                    fieldType: "select",
-                    options: []
-                  }];
-                } else {
-                  newField.options = [{
-                    name: "static",
-                    label: "Static",
-                    fieldType: "text"
-                  }, {
-                    name: "field",
-                    label: "Field",
-                    fieldType: "select",
-                    options: []
-                  }];
-                }
-
-                newField.options[1].options = compareOptions.fields[0].options;
-              }
-              break;
-            case "number":
-              newField.operators = [{
-                label: "is present",
-                name: "present",
-                fieldType: "none"
-              }, {
-                label: "is blank",
-                name: "blank",
-                fieldType: "none"
-              }, {
-                label: "is equal to",
-                name: "equalTo",
-                fieldType: "text"
-              }, {
-                label: "is not equal to",
-                name: "notEqualTo",
-                fieldType: "text"
-              }, {
-                label: "is greater than",
-                name: "greaterThan",
-                fieldType: "text"
-              }, {
-                label: "is greater than or equal to",
-                name: "greaterThanEqual",
-                fieldType: "text"
-              }, {
-                label: "is less than",
-                name: "lessThan",
-                fieldType: "text"
-              }, {
-                label: "is less than or equal to",
-                name: "lessThanEqual",
-                fieldType: "text"
-              }];
-
-              newField.options = [{
-                name: "static",
-                label: "Static",
-                fieldType: "text"
-              }, {
-                name: "field",
-                label: "Field",
-                fieldType: "select",
-                options: []
-              }];
-
-              var compareOptions = this.getCopyValueFieldOptionsFor(entry, properties);
-              if (compareOptions.fields.length > 0) {
-                newField.options[1].options = compareOptions.fields[0].options;
-              }
-              break;
-            case "boolean":
-              newField.operators = [{
-                label: "is blank",
-                name: "blank",
-                fieldType: "none"
-              }, {
-                label: "is equal to",
-                name: "equalTo",
-                fieldType: "select"
-              }, {
-                label: "is not equal to",
-                name: "notEqualTo",
-                fieldType: "select"
-              }];
-              newField.options = [{
-                name: "static",
-                label: "Static",
-                fieldType: "select",
-                options: [{
-                  name: "true",
-                  label: "true"
-                }, {
-                  name: "false",
-                  label: "false"
-                }]
-              }, {
-                name: "field",
-                label: "Field",
-                fieldType: "select",
-                options: []
-              }];
-
-              var compareOptions = this.getCopyValueFieldOptionsFor(entry, properties);
-              if (compareOptions.fields.length > 0) {
-                newField.options[1].options = compareOptions.fields[0].options;
-              }
-              break;
-            case "enum":
-              newField.operators = [{
-                label: "is present",
-                name: "present",
-                fieldType: "none"
-              }, {
-                label: "is blank",
-                name: "blank",
-                fieldType: "none"
-              }, {
-                label: "is equal to",
-                name: "equalTo",
-                fieldType: "text"
-              }, {
-                label: "is not equal to",
-                name: "notEqualTo",
-                fieldType: "text"
-              }];
-
-              var compareOptions = this.getCopyValueFieldOptionsFor(entry, properties);
-              if (compareOptions.fields[0].options.length > 0) {
-                newField.operators[2].fieldType = "select";
-
-                newField.options = [{
-                  name: "static",
-                  label: "Static",
-                  fieldType: "text"
-                }, {
-                  name: "field",
-                  label: "Field",
-                  fieldType: "select",
-                  options: []
-                }];
-
-                newField.options[1].options = compareOptions.fields[0].options;
-              }
-              break;
-          }
-          var defaultOperator = newField.operators[0].name;
-          if (properties[entry].defaultOperator !== undefined) {
-            defaultOperator = properties[entry].defaultOperator;
-          }
-          if (defaultConditions) {
-            result.data.all.push({
-              name: newField.name,
-              operator: defaultOperator,
-              value: defaultValue
-            });
-          }
-        }
-        return result;
-      },
-
-      getCopyValueFieldOptionsFor: function(condition, properties) {
-        var result = {
-          label: this.capitalize(condition + " to"),
-          name: condition + "Field",
-          fields: [{
-            label: "New Value",
-            name: "newValue",
-            fieldType: "select",
-            options: []
-          }]
-        };
-        var fieldsToAdd = [];
-
-        var
-          property,
-          condConf = properties[condition];
-
-        for (property in properties) {
-          if (condition !== property) { // if names are different
-            var propertyConf = properties[property];
-            var isTarget = this.isCopyTarget(condConf, propertyConf);
-            if (isTarget) {
-              fieldsToAdd.push({
-                label: property,
-                name: property + "Field"
-              });
-            }
-          }
-        }
-
-        result.fields[0].options = fieldsToAdd;
-        return result;
-      },
-
-      /**
-       * Determines whether targetConf can be a copy target for condConf
-       * @return true if it can, false otherwise
-       */
-      isCopyTarget: function(condConf, targetConf) {
-
-        if (condConf.type !== targetConf.type) {
-          // if both have different type they are not compatible
-          return false;
-        }
-
-        if (condConf.xtype === undefined && targetConf.xtype === undefined) {
-          // if both are of the same type and do not have xtype and they are compatible
-          return true;
-        }
-
-        if ((condConf.xtype === undefined && targetConf.xtype !== undefined) || (condConf.xtype !== undefined && targetConf.xtype === undefined)) {
-          // if both have same type but one has xtype and other doesn't they are not compatible
-          return false;
-        }
-
-        if (condConf.xtype !== targetConf.xtype) {
-          // if both have same type but different xtypes they are not compatible
-          return false;
-        }
-
-        // at this point both have the same type and same xtype
-
-        if (condConf.xtype === 'enum') {
-          // compare xvaluelists
-          if (condConf.xvaluelist === undefined || targetConf.xvaluelist === undefined || condConf.xvaluelist !== targetConf.xvaluelist) {
-            // if any of the two doesn't have xvaluelist or xvaluelists are different they are not compatible
-            return false;
-          }
-        } else if (condConf.xtype === 'lookup') {
-          if (condConf.xurl === undefined || targetConf.xurl === undefined || condConf.xurl !== targetConf.xurl) {
-            // if any of the two doesn't have xurl or xurls are different they are not compatible
-            return false;
-          }
-        } else {
-          // xtype is not recognized; return false
-          return false;
-        }
-
-        // source and target are compatible; return true
-        return true;
-      },
-
-      removeAllChildren: function(parentElement) {
-        for (var i = 0; i < Polymer.dom(parentElement).childNodes.length; i += 1) {
-          Polymer.dom(parentElement).removeChild(Polymer.dom(parentElement).childNodes[i]);
         }
       },
 
@@ -571,58 +210,865 @@
           array2.push(array1[arr1Index]);
         }
       },
-      // because for some reason objects are not the same i need this deep compare function
-      isEqualTo: function(o, p) {
-        var i,
-          keysO = Object.keys(o).sort(),
-          keysP = Object.keys(p).sort();
-        if (keysO.length !== keysP.length) {
-          return false; //not the same nr of keys
+      // ------------------------------
+      // for the specified updatePath inserts the data for the condition into conditions array
+      // and fires the value-changed event
+      // ------------------------------
+      addCondition: function(updatePath, data) {
+        var conditionData = this.get(updatePath, this.value);
+        conditionData.push(data);
+        this.fire('value-changed', {
+          value: this.value
+        });
+      },
+      // ------------------------------
+      // for the specified updatePath removes the data for the condition from conditions array
+      // updates the updatePaths for elements where necessary
+      // and fires the value-changed event
+      // ------------------------------
+      removeCondition: function(updatePath) {
+        var pathParts = this._getPathParts(updatePath);
+        var removePath = pathParts[pathParts.length - 1];
+        pathParts.splice(pathParts.length - 1, 1);
+
+        var conditions = this.get(pathParts, this.value);
+        var removeIndex = parseInt(removePath);
+
+        for (var i = removeIndex + 1; i < conditions.length; i++) {
+          // create the container selector
+          var containerSelector = '[data-update-path=\'' + pathParts.join('.') + '.' + i + '\']';
+          // find the condition / rule div
+          var container = Polymer.dom(this.$.conditionsHtmlContainer).querySelector(containerSelector);
+          // start the update process on the div
+          var oldPath = pathParts.join('.') + '.' + i;
+          var newPath = pathParts.join('.') + '.' + (i - 1);
+          if (Polymer.dom(container).classList.contains('rule')) {
+            this.updateLeafPath(container, oldPath, newPath);
+          } else if (Polymer.dom(container).classList.contains('conditional')) {
+            this.updateNodePath(container, oldPath, newPath);
+          }
         }
-        if (keysO.join('') !== keysP.join('')) {
-          return false; //different keys
+
+        conditions.splice(removePath, 1);
+
+        this.fire("value-changed", {
+          value: this.value
+        });
+      },
+      // ------------------------------
+      // updates the updatePath for the condition (contains zero or more rules or conditions)
+      // ------------------------------
+      updateNodePath: function(container, oldPath, newPath) {
+        // update container's attribute
+        this.updatePathAttribute(container, oldPath, newPath);
+
+        // update kind select
+        var kindSelect = Polymer.dom(container).querySelector('.all-any-none');
+        this.updatePathAttribute(kindSelect, oldPath, newPath);
+
+        // update buttons
+        var addRuleButton = Polymer.dom(container).querySelector('.add-rule');
+        this.updatePathAttribute(addRuleButton, oldPath, newPath);
+        var addConditionButton = Polymer.dom(container).querySelector('.add-condition');
+        this.updatePathAttribute(addConditionButton, oldPath, newPath);
+        var removeButton = Polymer.dom(container).querySelector('.remove');
+        this.updatePathAttribute(removeButton, oldPath, newPath);
+
+        var childNodes = Polymer.dom(container).childNodes,
+          i, child, length = childNodes.length;
+
+        for (i = 0; i < length; i++) {
+          child = childNodes[i];
+          if (child.classList.contains('rule')) {
+            this.updateLeafPath(child, oldPath, newPath);
+          } else if (child.classList.contains('conditional')) {
+            this.updateNodePath(child, oldPath, newPath);
+          }
         }
-        for (i = 0; i < keysO.length; ++i) {
-          if (o[keysO[i]] instanceof Array) {
-            if (!(p[keysO[i]] instanceof Array)) {
-              return false;
+      },
+      // ------------------------------
+      // updates the updatePath for the rule
+      // ------------------------------
+      updateLeafPath: function(leaf, oldPath, newPath) {
+        this.updatePathAttribute(leaf, oldPath, newPath);
+
+        var fieldSelect = Polymer.dom(leaf).querySelector('.field');
+        var operatorSelect = Polymer.dom(leaf).querySelector('.operator');
+        var compareToSelect = Polymer.dom(leaf).querySelector('.compareTo');
+        var value = Polymer.dom(leaf).querySelector('.value');
+        var removeButton = Polymer.dom(leaf).querySelector('.remove');
+
+        this.updatePathAttribute(fieldSelect, oldPath, newPath);
+        this.updatePathAttribute(operatorSelect, oldPath, newPath);
+        if (compareToSelect !== undefined && compareToSelect !== null) {
+          this.updatePathAttribute(compareToSelect, oldPath, newPath);
+        }
+        if (value !== undefined && value !== null) {
+          this.updatePathAttribute(value, oldPath, newPath);
+        }
+        this.updatePathAttribute(removeButton, oldPath, newPath);
+      },
+      // ------------------------------
+      // helper function which updates the data-update-path attribute
+      // ------------------------------
+      updatePathAttribute: function(node, oldPath, newPath) {
+        var updatePath = node.getAttribute('data-update-path');
+        updatePath = updatePath.replace(oldPath, newPath);
+        Polymer.dom(node).setAttribute('data-update-path', updatePath);
+      },
+      // ----------------------------------------
+      // at-rule-conditions helper functions
+      // ----------------------------------------
+      __conditionsHelperFunctions: {
+        // ----------------------------------------
+        // validates the schema object
+        // schema object must contain property 'properties'
+        // ----------------------------------------
+        isSchemaValid: function(schema) {
+          var
+            result = false;
+
+          result = schema.hasOwnProperty('properties');
+
+          return result;
+        },
+        // ----------------------------------------
+        // converts schema to config and data
+        // schema object must contain property 'properties'
+        // ----------------------------------------
+        schemaToConfig: function(schema) {
+          var result = {
+              value: {
+                fields: [],
+                data: {
+                  kind: "all",
+                  conditions: []
+                }
+              },
+              hasErrors: false,
+              errors: []
+            },
+            properties = schema.properties,
+            propName, // property name
+            propDef, // property definition
+            propLabel, // property title
+            propType, // property type
+            field, // a new field to be added to result.value.fields
+            hasCompareTargets, // bool that tells that current property has compare targets
+            compareTargets, // for a given field holds other fields whose value can be compared to the given field's value
+            indexOfDash // for xtype="code-*"
+          ;
+
+          // we want to iterate over all properties of schema.properties
+          for (propName in properties) {
+            propDef = properties[propName];
+            propLabel = this.getPropertyLabel(propName, propDef);
+
+            field = {
+              label: propLabel,
+              name: propName,
+              operators: [],
+              options: []
             }
-            //if (compareObjects(o[keysO[i]], p[keysO[i]] === false) return false
-            //would work, too, and perhaps is a better fit, still, this is easy, too
-            if (p[keysO[i]].sort().join('') !== o[keysO[i]].sort().join('')) {
-              return false;
+
+            result.value.fields.push(field);
+
+            // *ij* if its needed to compare fields value against a predefined list of values
+            //  propDef needs to have an additional property that will provide the list of values
+
+            propType = this.getPropertyType(propDef);
+            compareTargets = this.getCompareTargets(propName, properties);
+            hasCompareTargets = compareTargets.length > 0;
+
+            switch (propType) {
+              case "string":
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
+                field.operators.push(this.createOperatorDef("includes", "includes", "select"));
+                field.operators.push(this.createOperatorDef("matches regex", "matchesRegex", "select"));
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+                field.operators.push(this.createOperatorDef("is less than", "lessThan", "select"));
+                field.operators.push(this.createOperatorDef("is less than or equal to", "lessThanEqual", "select"));
+                field.operators.push(this.createOperatorDef("is greater than", "greaterThan", "select"));
+                field.operators.push(this.createOperatorDef("is greater than or equal to", "greaterThanEqual", "select"));
+
+                field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                if (hasCompareTargets) {
+                  field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
+                }
+                break;
+              case "number":
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+                field.operators.push(this.createOperatorDef("is less than", "lessThan", "select"));
+                field.operators.push(this.createOperatorDef("is less than or equal to", "lessThanEqual", "select"));
+                field.operators.push(this.createOperatorDef("is greater than", "greaterThan", "select"));
+                field.operators.push(this.createOperatorDef("is greater than or equal to", "greaterThanEqual", "select"));
+
+                field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                if (hasCompareTargets) {
+                  field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
+                }
+                break;
+              case "boolean":
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+                var trueFalseOptionsArray = [{
+                  name: "true",
+                  label: "true"
+                }, {
+                  name: "false",
+                  label: "false"
+                }];
+
+                field.options.push(this.createFieldOption("Static", "static", trueFalseOptionsArray, "select"));
+                if (hasCompareTargets) {
+                  field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
+                }
+                break;
+              case "enum":
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
+
+                var
+                  enumOptions = this.getEnumOptions(propDef),
+                  hasEnumOptions = enumOptions.length > 0;
+
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+
+
+                if (hasEnumOptions) {
+                  field.options.push(this.createFieldOption("Static", "static", enumOptions, "select"));
+                } else {
+                  field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                }
+                if (hasCompareTargets) {
+                  field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
+                }
+                break;
+              case "lookup":
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
+
+                enumOptions = this.getEnumOptions(propDef);
+                hasEnumOptions = enumOptions.length > 1;
+
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+
+                if (hasEnumOptions) {
+                  field.options.push(this.createFieldOption("Static", "static", enumOptions, "select"));
+                } else {
+                  field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                }
+                if (hasCompareTargets) {
+                  field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
+                }
+                break;
             }
-          } else if (o[keysO[i]] instanceof Date) {
-            if (!(p[keysO[i]] instanceof Date)) {
-              return false;
+            // end switch (propType)
+
+          }
+
+          return result;
+        },
+        // ----------------------------------------
+        // calculates what is the label for the property
+        // ----------------------------------------
+        getPropertyLabel: function(propName, propDef) {
+          var result = this.capitalize(propName);
+
+          if (propDef.hasOwnProperty('title') && propDef.title !== '') {
+            result = propDef.title;
+          } else if (propDef.hasOwnProperty('description' && propDef.description !== '')) {
+            result = propDef.description;
+          }
+
+          return result;
+        },
+        // ----------------------------------------
+        // calculates what is property's type
+        // ----------------------------------------
+        getPropertyType: function(propDef) {
+          var result = propDef.type;
+
+          if (result === "string" && propDef.hasOwnProperty('xtype') && propDef.xtype !== "") {
+            result = propDef.xtype;
+            if (result.indexOf('-') != -1) {
+              indexOfDash = type.indexOf('-');
+              result = type.slice(0, indexOfDash);
             }
-            if (('' + o[keysO[i]]) !== ('' + p[keysO[i]])) {
-              return false;
-            }
-          } else if (o[keysO[i]] instanceof Function) {
-            if (!(p[keysO[i]] instanceof Function)) {
-              return false;
-            }
-            //ignore functions, or check them regardless?
-          } else if (o[keysO[i]] instanceof Object) {
-            if (!(p[keysO[i]] instanceof Object)) {
-              return false;
-            }
-            if (o[keysO[i]] === o) { //self reference?
-              if (p[keysO[i]] !== p) {
-                return false;
+          }
+
+          if (result === "string" && (!propDef.hasOwnProperty('xtype') || propDef.xtype === '') && propDef.hasOwnProperty('enum') && this.isArray(propDef.enum)) {
+            result = "enum";
+          }
+
+          return result;
+        },
+        // ----------------------------------------
+        // for a given property name finds the other properties which value can be compared to this property's value
+        // ----------------------------------------
+        getCompareTargets: function(propName, properties) {
+          var
+            result = [],
+            sourceDef = properties[propName],
+            targetDef = {},
+            propNameIndex;
+
+          for (propNameIndex in properties) {
+            if (propName !== propNameIndex) { // if names are differenct do the check
+              targetDef = properties[propNameIndex];
+              if (this.isCompareTarget(sourceDef, targetDef)) {
+                result.push({
+                  label: this.getPropertyLabel(propNameIndex, targetDef),
+                  name: propNameIndex
+                });
               }
-            } else if (compareObjects(o[keysO[i]], p[keysO[i]]) === false) {
-              return false; //WARNING: does not deal with circular refs other than ^^
             }
           }
-          if (o[keysO[i]] !== p[keysO[i]]) //change !== to != for loose comparison
-          {
-            return false; //not the same value
+
+          return result;
+        },
+        // ----------------------------------------
+        // returns true if sourceDef and targetDef define elements whose value can be compared
+        // ----------------------------------------
+        isCompareTarget: function(sourceDef, targetDef) {
+          if (sourceDef.type !== targetDef.type) {
+            // if both have different type they are not compatible
+            return false;
+          }
+
+          if (sourceDef.xtype === undefined && targetDef.xtype === undefined) {
+            // if both are of the same type and do not have xtype and they are compatible
+            return true;
+          }
+
+          if ((sourceDef.xtype === undefined && targetDef.xtype !== undefined) || (sourceDef.xtype !== undefined && targetDef.xtype === undefined)) {
+            // if both have same type but one has xtype and other doesn't they are not compatible
+            return false;
+          }
+
+          if (sourceDef.xtype !== targetDef.xtype) {
+            // if both have same type but different xtypes they are not compatible
+            return false;
+          }
+
+          // at this point both have the same type and same xtype
+
+          if (sourceDef.xtype === 'enum') {
+            // compare xvaluelists
+            if (sourceDef.xvaluelist === undefined || targetDef.xvaluelist === undefined || sourceDef.xvaluelist !== targetDef.xvaluelist) {
+              // if any of the two doesn't have xvaluelist or xvaluelists are different they are not compatible
+              return false;
+            }
+          } else if (sourceDef.xtype === 'lookup') {
+            if (sourceDef.xurl === undefined || targetDef.xurl === undefined || sourceDef.xurl !== targetDef.xurl) {
+              // if any of the two doesn't have xurl or xurls are different they are not compatible
+              return false;
+            }
+          } else {
+            // xtype is not recognized; return false
+            return false;
+          }
+
+          // source and target are compatible; return true
+          return true;
+        },
+        getEnumOptions: function(propDef) {
+          var
+            result = [],
+            value, valueList = [""],
+            trimedValue, index, length;
+
+          if (propDef.xvaluelist !== undefined && propDef.xvaluelist !== "") {
+            valueList = propDef.xvaluelist.split(',');
+          } else if (propDef.enum && this.isArray(propDef.enum)) {
+            valueList = propDef.enum;
+          }
+
+          length = valueList.length;
+          for (index = 0; index < length; index += 1) {
+            value = valueList[index];
+            trimedValue = value.trim();
+            result.push({
+              name: trimedValue,
+              label: this.capitalize(trimedValue)
+            });
+          }
+
+          return result;
+        },
+        // ----------------------------------------
+        // creates an operator definition
+        // ----------------------------------------
+        createOperatorDef: function(label, name, fieldType) {
+          var result = {
+            label: label,
+            name: name,
+            fieldType: fieldType
+          }
+
+          return result;
+        },
+        // ----------------------------------------
+        // creates a new field option
+        // ----------------------------------------
+        createFieldOption: function(label, name, options, fieldType) {
+          var result = {
+            label: label,
+            name: name
+          };
+          if (options !== undefined && this.isArray(options)) {
+            result.options = options;
+          }
+          if (fieldType !== undefined && this.isString(fieldType)) {
+            result.fieldType = fieldType;
+          }
+
+          return result;
+        },
+        // ----------------------------------------
+        // capitalizes the first letter of a word
+        // ----------------------------------------
+        capitalize: function(string) {
+          return string.charAt(0).toUpperCase() + string.slice(1);
+        },
+        // ----------------------------------------
+        // tests if obj is a javascript array
+        // ----------------------------------------
+        isArray: function(obj) {
+          return Object.prototype.toString.call(obj) === "[object Array]";
+        },
+        isString: function(obj) {
+          return Object.prototype.toString.call(obj) === "[object String]";
+        }
+      },
+      // ----------------------------------------
+      // end of at-rule-conditions helper functions
+      // ----------------------------------------
+
+      // ----------------------------------------
+      // at-rule-conditions html helper functions
+      // ----------------------------------------
+      buildConditionsHtml: function(htmlContainer, fields, data) {
+        var updatePath = '';
+        this.buildNodeHtml(htmlContainer, fields, data, updatePath);
+      },
+      buildNodeHtml: function(htmlContainer, fields, data, updatePath) {
+        var
+          kind = data.kind,
+          index,
+          condition,
+          length = data.conditions.length,
+          isLeaf,
+          self = this,
+          _fields = fields;
+
+        // ----------------------------------------
+        // build all-any-none select
+        // ----------------------------------------
+        var conditionsDiv = document.createElement('div');
+        Polymer.dom(conditionsDiv).classList.add('conditional');
+        Polymer.dom(conditionsDiv).classList.add(kind);
+        Polymer.dom(conditionsDiv).setAttribute('data-update-path', updatePath);
+        Polymer.dom(htmlContainer).appendChild(conditionsDiv);
+
+        var allAnyNoneWrapper = document.createElement('div');
+        Polymer.dom(allAnyNoneWrapper).classList.add('all-any-none-wrapper');
+
+        var allAnyNoneSelect = document.createElement('select');
+        Polymer.dom(allAnyNoneSelect).classList.add('all-any-none');
+        Polymer.dom(allAnyNoneSelect).setAttribute('data-update-path', this.createPath(updatePath, 'kind'));
+
+        var option = this.createSelectOption("all", "All", kind === "all");
+        Polymer.dom(allAnyNoneSelect).appendChild(option);
+        option = this.createSelectOption("any", "Any", kind === "any");
+        Polymer.dom(allAnyNoneSelect).appendChild(option);
+        option = this.createSelectOption("none", "None", kind === "none");
+        Polymer.dom(allAnyNoneSelect).appendChild(option);
+        Polymer.dom(allAnyNoneWrapper).appendChild(allAnyNoneSelect);
+
+        var span = document.createElement('span');
+        Polymer.dom(span).innerHTML = "of the following conditions:";
+
+        Polymer.dom(allAnyNoneWrapper).appendChild(span);
+        Polymer.dom(conditionsDiv).appendChild(allAnyNoneWrapper);
+
+        // ------------------------------
+        // create add condition button
+        // ------------------------------
+
+        var addRuleLink = document.createElement("button");
+        Polymer.dom(addRuleLink).classList.add('add-rule');
+        Polymer.dom(addRuleLink).setAttribute('type', 'button');
+        Polymer.dom(addRuleLink).setAttribute('data-update-path', this.createPath(updatePath, 'conditions'));
+        Polymer.dom(addRuleLink).innerHTML = "Add Condition";
+
+        addRuleLink.addEventListener('click', function(e) {
+          var _fields = fields;
+          var _htmlContainer = conditionsDiv;
+          var aField = _fields[0];
+
+          var data = {
+            name: aField.name,
+            operator: aField.operators[0].name,
+            compareTo: "text",
+            value: ""
+          };
+          var updatePath = e.target.getAttribute('data-update-path');
+          var conditionData = self.get(updatePath, self.value);
+          var index = conditionData.length;
+          var newPath = self.createPath(updatePath, index);
+
+          self.buildLeafHtml(_htmlContainer, _fields, data, newPath);
+          self.addCondition(updatePath, data);
+        });
+        Polymer.dom(conditionsDiv).appendChild(addRuleLink);
+
+        // ------------------------------
+        // create add sub-condition button
+        // ------------------------------
+        var addConditionLink = document.createElement("button");
+        Polymer.dom(addConditionLink).classList.add('add-condition');
+        Polymer.dom(addConditionLink).setAttribute('type', 'button');
+        Polymer.dom(addConditionLink).setAttribute('data-update-path', this.createPath(updatePath, 'conditions'));
+        Polymer.dom(addConditionLink).innerHTML = "Add Sub-Condition";
+
+        addConditionLink.addEventListener('click', function(e) {
+          var _fields = fields;
+          var _htmlContainer = conditionsDiv;
+          var aField = _fields[0];
+
+          var data = {
+            kind: "all",
+            conditions: [{
+              name: aField.name,
+              operator: aField.operators[0].name,
+              compareTo: "text",
+              value: ''
+            }]
+          };
+          var updatePath = e.target.getAttribute('data-update-path');
+          var conditionData = self.get(updatePath, self.value);
+          var index = conditionData.length;
+          var localPath = self.createPath(updatePath, index);
+          self.buildNodeHtml(_htmlContainer, _fields, data, localPath);
+
+          self.addCondition(updatePath, data);
+        });
+        Polymer.dom(conditionsDiv).appendChild(addConditionLink);
+
+        // ------------------------------
+        // create remove condition / sub-condition button
+        // ------------------------------
+        var removeLink = document.createElement('button');
+        Polymer.dom(removeLink).setAttribute('type', 'button');
+        Polymer.dom(removeLink).classList.add('remove');
+        Polymer.dom(removeLink).innerHTML = 'Remove This Sub-Condition';
+        Polymer.dom(removeLink).setAttribute('data-update-path', updatePath);
+
+        removeLink.addEventListener('click', function(e) {
+          var remElem = conditionsDiv;
+          var remElemParent = Polymer.dom(remElem).parentNode;
+          Polymer.dom(remElemParent).removeChild(remElem);
+
+          var updatePath = e.target.getAttribute('data-update-path');
+          self.removeCondition(updatePath);
+        });
+        Polymer.dom(conditionsDiv).appendChild(removeLink);
+
+        // ------------------------------
+        // build the rules or conditions for this node
+        // ------------------------------
+        for (index = 0; index < length; index += 1) {
+          condition = data.conditions[index];
+          isLeaf = condition.kind === undefined;
+          var levelPath = this.createPath(updatePath, "conditions." + index);
+
+          if (isLeaf) {
+            this.buildLeafHtml(conditionsDiv, fields, condition, levelPath);
+          } else {
+            this.buildNodeHtml(conditionsDiv, fields, condition, levelPath);
           }
         }
-        return true;
-      }
+      },
+      // ------------------------------
+      // builds the html structure for the rule
+      // ------------------------------
+      buildLeafHtml: function(htmlContainer, fields, data, updatePath) {
+        var self = this;
+        data.compareTo = data.compareTo !== undefined ? data.compareTo : 'text';
+        if (data.compareTo !== 'text' && data.compareTo !== 'field') {
+          data.compareTo = 'text';
+        }
+
+        // ------------------------------
+        // create the html container for the rule
+        // ------------------------------
+        var leafContainer = document.createElement('div');
+        Polymer.dom(leafContainer).classList.add('rule');
+        Polymer.dom(leafContainer).setAttribute('data-update-path', updatePath);
+        Polymer.dom(htmlContainer).appendChild(leafContainer);
+
+        // ------------------------------
+        // create the remove button
+        // ------------------------------
+        var removeLink = document.createElement('button');
+        Polymer.dom(removeLink).setAttribute('type', 'button');
+        Polymer.dom(removeLink).classList.add('remove');
+        Polymer.dom(removeLink).innerHTML = "Remove";
+        Polymer.dom(removeLink).setAttribute('data-update-path', updatePath);
+        Polymer.dom(leafContainer).appendChild(removeLink);
+
+        removeLink.addEventListener('click', function(event) {
+          var remElem = leafContainer;
+          var remElemParent = Polymer.dom(remElem).parentNode;
+          Polymer.dom(remElemParent).removeChild(remElem);
+
+          var updatePath = event.target.getAttribute('data-update-path');
+          self.removeCondition(updatePath);
+        });
+
+        // ------------------------------
+        // create the select element for selecting the field(s)
+        // ------------------------------
+        var fieldSelect = this.createFieldSelect(fields, data, updatePath);
+        Polymer.dom(leafContainer).insertBefore(fieldSelect, removeLink);
+
+        fieldSelect.addEventListener('change', function(event) {
+          var _fields = fields;
+          var _container = leafContainer;
+          var updatePath = _container.getAttribute('data-update-path');
+          var data = self.get(updatePath, self.value);
+          var target = event.target;
+          var selectedFieldName = target.value;
+          var selectedField = self.getFieldByName(selectedFieldName);
+
+          // debugger;
+          var operatorSelect = self.createOperatorSelect(_container, selectedField, data, updatePath);
+        });
+
+        // ------------------------------
+        // create the select element for selecting operator(s)
+        // ------------------------------
+        var selectedFieldName = fieldSelect.value;
+        var selectedField = this.getFieldByName(selectedFieldName);
+        var operatorSelect = this.createOperatorSelect(leafContainer, selectedField, data, updatePath);
+      },
+      // ------------------------------
+      // creates the select with available fields
+      // ------------------------------
+      createFieldSelect: function(fields, data, updatePath) {
+        var fieldSelect = document.createElement('select');
+        Polymer.dom(fieldSelect).classList.add('field');
+        Polymer.dom(fieldSelect).setAttribute('data-update-path', this.createPath(updatePath, 'name'));
+        var index, length = fields.length,
+          field, option;
+
+        for (index = 0; index < length; index += 1) {
+          field = fields[index];
+          option = this.createSelectOption(field.name, field.label, data.name === field.name);
+          Polymer.dom(option).setAttribute('options', JSON.stringify(field.options));
+          Polymer.dom(fieldSelect).appendChild(option);
+        }
+        return fieldSelect;
+      },
+      // ------------------------------
+      // creates a select element populated with operators for the selected field
+      // ------------------------------
+      createOperatorSelect: function(htmlContainer, selectedField, data, updatePath) {
+        var prevOperatorSelect = Polymer.dom(htmlContainer).querySelector('.operator');
+        if (prevOperatorSelect !== undefined) {
+          Polymer.dom(htmlContainer).removeChild(prevOperatorSelect);
+        }
+        var removeButton = Polymer.dom(htmlContainer).querySelector('.remove');
+
+        var operators = selectedField.operators;
+        var i, length = operators.length,
+          operator, option;
+        var operatorSelect = document.createElement('select');
+        Polymer.dom(operatorSelect).setAttribute('data-update-path', this.createPath(updatePath, 'operator'));
+        Polymer.dom(operatorSelect).classList.add('operator');
+
+        for (i = 0; i < length; i += 1) {
+          operator = operators[i];
+          option = this.createSelectOption(operator.name, operator.label, operator.name === data.operator);
+          Polymer.dom(option).setAttribute('data-field-type', operator.fieldType);
+          Polymer.dom(option).setAttribute('data-compare-to', data.compareTo);
+          Polymer.dom(operatorSelect).appendChild(option);
+        }
+
+        Polymer.dom(htmlContainer).insertBefore(operatorSelect, removeButton);
+
+        var selectedOperatorOption = Polymer.dom(operatorSelect).querySelector('option:checked');
+        var self = this;
+
+        operatorSelect.addEventListener('change', function(event) {
+          var _container = htmlContainer;
+          var _data = data;
+          var updatePath = _container.getAttribute('data-update-path');
+          var target = event.target;
+          var selectedOperatorOption = Polymer.dom(target).querySelector('option:checked');
+
+          self.createOperatorCompareToSelect(_container, selectedOperatorOption, _data, updatePath);
+        });
+
+        this.createOperatorCompareToSelect(htmlContainer, selectedOperatorOption, data, updatePath);
+      },
+      // ------------------------------
+      // creates select field with static and field options
+      // ------------------------------
+      createOperatorCompareToSelect: function(htmlContainer, selectedOperatorOption, data, updatePath) {
+        var prevCompareTo = Polymer.dom(htmlContainer).querySelector('.compareTo');
+        if (prevCompareTo !== undefined) {
+          Polymer.dom(htmlContainer).removeChild(prevCompareTo);
+        }
+
+        var removeButton = Polymer.dom(htmlContainer).querySelector('.remove');
+        var fieldSelect = Polymer.dom(htmlContainer).querySelector('.field');
+        var selectedFieldName = fieldSelect.value;
+        var selectedField = this.getFieldByName(selectedFieldName);
+
+        var fieldType = selectedOperatorOption.getAttribute('data-field-type');
+        var compareTo = selectedOperatorOption.getAttribute('data-compare-to');
+        var options = selectedField.options,
+          i, length = options.length,
+          option, htmlOption;
+
+        var result = '';
+        if (fieldType === "select") {
+          result = document.createElement('select');
+          Polymer.dom(result).classList.add('compareTo');
+          Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'compareTo'));
+
+          for (var i = 0; i < length; i++) {
+            option = options[i];
+            htmlOption = this.createSelectOption(option.name, option.label || option.name, compareTo === option.name);
+            Polymer.dom(htmlOption).setAttribute('data-field-type', option.fieldType);
+            if (option.options !== undefined) {
+              Polymer.dom(htmlOption).setAttribute('data-options', JSON.stringify(option.options));
+            }
+            Polymer.dom(result).appendChild(htmlOption);
+          }
+
+          Polymer.dom(htmlContainer).insertBefore(result, removeButton);
+          var self = this;
+          result.addEventListener('change', function(event) {
+            var _container = htmlContainer;
+            var target = event.target;
+            var parentNode = Polymer.dom(target).parentNode;
+            var updatePath = parentNode.getAttribute('data-update-path');
+            var _data = data
+            var selectedCompareTo = Polymer.dom(target).querySelector('option:checked');
+
+            self.createValueHtml(_container, selectedCompareTo, data, updatePath);
+          });
+
+          var selectedCompareTo = Polymer.dom(result).querySelector('option:checked');
+          this.createValueHtml(htmlContainer, selectedCompareTo, data, updatePath);
+        } else {
+          var prevValueHtml = Polymer.dom(htmlContainer).querySelector('.value');
+          if (prevValueHtml !== undefined) {
+            Polymer.dom(htmlContainer).removeChild(prevValueHtml);
+          }
+        }
+      },
+      // ------------------------------
+      // creates html for the value part; it creates either a text, textarea or select
+      // last part of the "waterfall cascade"
+      // ------------------------------
+      createValueHtml: function(htmlContainer, selectedCompareTo, data, updatePath) {
+        var prevValueHtml = Polymer.dom(htmlContainer).querySelector('.value');
+        if (prevValueHtml !== undefined) {
+          Polymer.dom(htmlContainer).removeChild(prevValueHtml);
+        }
+        var removeButton = Polymer.dom(htmlContainer).querySelector('.remove');
+
+        var result = '';
+        var fieldType = selectedCompareTo.getAttribute('data-field-type');
+        var optionsJson = selectedCompareTo.getAttribute('data-options');
+        var options = JSON.parse(optionsJson);
+
+        switch (fieldType) {
+          case "none":
+            result = document.createElement('input');
+            Polymer.dom(result).setAttribute('type', 'hidden');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "text":
+            result = document.createElement('input');
+            Polymer.dom(result).setAttribute('type', 'text');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "textarea":
+            result = document.createElement('textarea');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "select":
+            result = document.createElement('select');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            Polymer.dom(result).classList.add('value');
+
+            for (var i = 0; i < options.length; i++) {
+              var option = options[i];
+              var htmlOption = this.createSelectOption(option.name, option.label || option.name, data.value === option.name);
+              Polymer.dom(result).appendChild(htmlOption);
+            }
+            break;
+        }
+
+        Polymer.dom(htmlContainer).insertBefore(result, removeButton);
+      },
+      getFieldByName: function(fieldName) {
+        var fields = this.config,
+          i,
+          length = fields.length,
+          field;
+
+        for (i = 0; i < length; i += 1) {
+          field = fields[i];
+          if (field.name === fieldName) {
+            break;
+          }
+        }
+
+        return field;
+      },
+      createSelectOption: function(value, text, selected) {
+        var option = document.createElement("option");
+        option.value = value;
+        option.text = text;
+        option.selected = selected;
+
+        return option;
+      },
+      createPath: function(previousPath, step) {
+          var result = '';
+          if (previousPath === '') {
+            result = step;
+          } else {
+            result = previousPath + "." + step;
+          }
+
+          return result;
+        }
+        // ----------------------------------------
+        // end of at-rule-conditions html helper functions
+        // ----------------------------------------
     });
+    // ----------------------------------------
+    // end of at-rule-conditions definition
+    // ----------------------------------------
   </script>
 </dom-module>

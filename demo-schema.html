@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>at-rule-conditions Demo</title>
+
+  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../polymer/polymer.html" />
+  <link rel="import" href="../layout/layout.html" />
+  <link rel="import" href="at-rule-conditions.html" />
+</head>
+
+<body>
+  <div class="vertical layout">
+    <div class="horizontal layout">
+      <h2>Conditions Demo - json schema</h2>
+    </div>
+    <div class="horizontal layout">
+      <at-rule-conditions id="afConditions"></at-rule-conditions>
+    </div>
+
+    <div class="horizontal layout">
+      <div class="vertical layout flex-6">
+        <div class="horizontal layout">
+          <h3>at-rule-conditions value</h3>
+        </div>
+        <div class="horizontal layout">
+          <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
+        </div>
+      </div>
+      <div class="vertical layout flex-6">
+        <div class="horizontal layout">
+          <h3>at-rule-conditions schema</h3>
+        </div>
+        <div class="horizontal layout">
+          <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('WebComponentsReady', function() {
+
+      var jsonSchema = {
+        "properties": {
+          "id": {
+            "description": "The unique identifier for a product",
+            "type": "number"
+          },
+          "name": {
+            "type": "string",
+            "required": "true",
+            "xinputmode": "required"
+          },
+          "city": {
+            "type": "string",
+            "default": "Default city name"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "activePera": {
+            "type": "boolean",
+            "default": true,
+            "description": "This is description for pera"
+          },
+          "dropdownDemo": {
+            "title": "Drop down demo",
+            "type": "string",
+            "xtype": "enum",
+            "xvaluelist": "XML,JSON",
+            "default": "XML"
+          },
+          "card": {
+            "title": "Card",
+            "type": "string",
+            "xtype": "lookup",
+            "xurl": "http://localhost:2014/Activity/adenin.GateKeeper.Content/card/"
+          }
+        },
+        "required": ["id", "city"]
+      };
+
+      var jsonValue = {
+        "kind": "all",
+        "conditions": [{
+          "name": "id",
+          "operator": "present",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "name",
+          "operator": "equalTo",
+          "value": "pera",
+          "compareTo": "text"
+        }, {
+          "name": "city",
+          "operator": "notEqualTo",
+          "value": "name",
+          "compareTo": "text"
+        }, {
+          "kind": "any",
+          "conditions": [{
+            "name": "active",
+            "operator": "equalTo",
+            "value": "true",
+            "compareTo": "text"
+          }, {
+            "name": "activePera",
+            "operator": "notEqualTo",
+            "value": "active",
+            "compareTo": "text"
+          }, {
+            "name": "dropdownDemo",
+            "operator": "equalTo",
+            "value": "JSON",
+            "compareTo": "text"
+          }, {
+            "kind": "none",
+            "conditions": [{
+              "name": "active",
+              "operator": "notEqualTo",
+              "value": "false",
+              "compareTo": "text"
+            }, {
+              "name": "activePera",
+              "operator": "equalTo",
+              "value": "active",
+              "compareTo": "text"
+            }, {
+              "name": "dropdownDemo",
+              "operator": "notEqualTo",
+              "value": "XML",
+              "compareTo": "text"
+            }, {
+              "kind": "none",
+              "conditions": [{
+                "name": "active",
+                "operator": "notEqualTo",
+                "value": "false",
+                "compareTo": "text"
+              }, {
+                "name": "activePera",
+                "operator": "equalTo",
+                "value": "active",
+                "compareTo": "text"
+              }, {
+                "name": "dropdownDemo",
+                "operator": "notEqualTo",
+                "value": "XML",
+                "compareTo": "text"
+              }]
+            }, {
+              "kind": "none",
+              "conditions": [{
+                "name": "active",
+                "operator": "notEqualTo",
+                "value": "false",
+                "compareTo": "text"
+              }, {
+                "name": "activePera",
+                "operator": "equalTo",
+                "value": "active",
+                "compareTo": "text"
+              }, {
+                "name": "dropdownDemo",
+                "operator": "notEqualTo",
+                "value": "XML",
+                "compareTo": "text"
+              }]
+            }, {
+              "kind": "none",
+              "conditions": [{
+                "name": "active",
+                "operator": "notEqualTo",
+                "value": "false",
+                "compareTo": "text"
+              }, {
+                "name": "activePera",
+                "operator": "equalTo",
+                "value": "active",
+                "compareTo": "text"
+              }, {
+                "name": "dropdownDemo",
+                "operator": "notEqualTo",
+                "value": "XML",
+                "compareTo": "text"
+              }]
+            }]
+          }, {
+            "name": "dropdownDemo",
+            "operator": "notEqualTo",
+            "value": "XML",
+            "compareTo": "text"
+          }]
+        }, {
+          "kind": "none",
+          "conditions": [{
+            "name": "active",
+            "operator": "notEqualTo",
+            "value": "false",
+            "compareTo": "text"
+          }, {
+            "name": "activePera",
+            "operator": "equalTo",
+            "value": "active",
+            "compareTo": "text"
+          }, {
+            "name": "dropdownDemo",
+            "operator": "notEqualTo",
+            "value": "XML",
+            "compareTo": "text"
+          }]
+        }]
+      }
+
+      var conditionsValueEcho = document.getElementById('conditionsValueEcho');
+      var afConditions = document.getElementById('afConditions');
+      afConditions.schema = jsonSchema;
+      afConditions.value = jsonValue;
+
+      afConditions.addEventListener('value-changed', function(event) {
+        var jsonValue = JSON.stringify(event.detail.value, undefined, ' ');
+        conditionsValueEcho.value = jsonValue;
+      });
+
+      var valueJsonStr = JSON.stringify(jsonValue, undefined, ' ');
+      conditionsValueEcho.value = valueJsonStr;
+      conditionsValueEcho.addEventListener('change', function(event) {
+        var
+          jsonValue = event.currentTarget.value,
+          value = JSON.parse(jsonValue);
+
+        afConditions.value = value;
+      });
+
+      var conditionsSchema = document.getElementById('conditionsSchema');
+      conditionsSchema.value = JSON.stringify(jsonSchema, undefined, ' ');
+      conditionsSchema.addEventListener('change', function(event) {
+        var
+          jsonSchema = event.currentTarget.value,
+          schema = JSON.parse(jsonSchema);
+        afConditions.schema = schema;
+      });
+    });
+  </script>
+</body>
+
+</html>
