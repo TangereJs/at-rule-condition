@@ -104,6 +104,7 @@
         // and manual triggering of value-change event
         // ------------------------------
         this.$.conditionsHtmlContainer.addEventListener('change', function(event) {
+          event.stopPropagation();
           var target = event.target;
           var updatePath = target.getAttribute('data-update-path');
           var value = target.value;
