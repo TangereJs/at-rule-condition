@@ -103,7 +103,7 @@
         // this is part of infrastructure to centralize value updates
         // and manual triggering of value-change event
         // ------------------------------
-        this.$.conditionsHtmlContainer.addEventListener('change', function(event) {
+        this.$.conditionsHtmlContainer.addEventListener('change', function (event) {
           event.stopPropagation();
           var target = event.target;
           var updatePath = target.getAttribute('data-update-path');
@@ -383,6 +383,7 @@
 
             switch (propType) {
               case "string":
+              case "password":
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("includes", "includes", "select"));
@@ -431,6 +432,7 @@
                 }
                 break;
               case "enum":
+              case "radio":
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
 
@@ -509,6 +511,10 @@
             result = "enum";
           }
 
+          if (result === 'bool') {
+            result = "boolean"
+          }
+
           return result;
         },
         // ----------------------------------------
@@ -572,10 +578,10 @@
               // if any of the two doesn't have xurl or xurls are different they are not compatible
               return false;
             }
-          } else {
+          } // else {
             // xtype is not recognized; return false
-            return false;
-          }
+            //return false;
+          //}
 
           // source and target are compatible; return true
           return true;
@@ -586,7 +592,10 @@
             value, valueList = [""],
             trimedValue, index, length;
 
-          if (propDef.xvaluelist !== undefined && propDef.xvaluelist !== "") {
+          if (propDef.xvaluelist && this.isArray(propDef.xvaluelist)) {
+            result = propDef.xvaluelist;
+            return result;
+          } else if (propDef.xvaluelist !== undefined && propDef.xvaluelist !== "" && propDef.xvaluelist.indexOf(',') !== -1) {
             valueList = propDef.xvaluelist.split(',');
           } else if (propDef.enum && this.isArray(propDef.enum)) {
             valueList = propDef.enum;
