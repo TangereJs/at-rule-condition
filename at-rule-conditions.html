@@ -502,8 +502,8 @@
           if (result === "string" && propDef.hasOwnProperty('xtype') && propDef.xtype !== "") {
             result = propDef.xtype;
             if (result.indexOf('-') != -1) {
-              indexOfDash = result.indexOf('-');
-              result = type.slice(0, indexOfDash);
+              var indexOfDash = result.indexOf('-');
+              result = result.slice(0, indexOfDash);
             }
           }
 
