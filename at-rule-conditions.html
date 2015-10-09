@@ -502,7 +502,7 @@
           if (result === "string" && propDef.hasOwnProperty('xtype') && propDef.xtype !== "") {
             result = propDef.xtype;
             if (result.indexOf('-') != -1) {
-              indexOfDash = type.indexOf('-');
+              indexOfDash = result.indexOf('-');
               result = type.slice(0, indexOfDash);
             }
           }
