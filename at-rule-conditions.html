@@ -1051,6 +1051,7 @@
               var htmlOption = this.createSelectOption(option.name, option.label || option.name, data.value === option.name);
               Polymer.dom(result).appendChild(htmlOption);
             }
+            data.value = result.value;
             break;
         }
 
