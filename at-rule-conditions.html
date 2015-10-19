@@ -47,11 +47,15 @@
     .rule select {
       margin-right: 10px;
     }
+
+    .hide-label {
+      display: none;
+    }
   </style>
   <template>
     <at-core-theme></at-core-theme>
-    <div>
-      <h4>When these conditions are met ...</h4>
+    <div id="labelContainer">
+      <h4>{{label}}</h4>
     </div>
     <div id="conditionsHtmlContainer"></div>
   </template>
@@ -91,10 +95,22 @@
           type: Boolean,
           value: false,
           observer: 'disabledChanged'
+        },
+        label: {
+          type: String,
+          value: 'When these conditions are met ...'
+        },
+        hideTitle: {
+          type: Boolean,
+          value: false,
+          observer: 'hideTitleChanged'
         }
       },
       _scopeCssViaAttr: true,
       _isReady: false,
+      hideTitleChanged: function (newValue, oldValue) {
+        this.toggleClass("hide-label", newValue, this.$.labelContainer);
+      },
       ready: function() {
         this._isReady = true;
         var self = this;
