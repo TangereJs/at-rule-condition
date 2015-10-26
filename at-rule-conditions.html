@@ -6,15 +6,15 @@
       margin: 20px 0;
     }
 
-    #conditionsHtmlContainer > .conditional > .remove {
+    #conditionsHtmlContainer > .-arc-conditional > .-arc-remove {
       display: none;
     }
 
-    .conditional {
+    .-arc-conditional {
       padding-left: 60px;
     }
 
-    .conditional .all-any-none-wrapper {
+    .-arc-conditional .all-any-none-wrapper {
       margin: 5px 20px 5px -60px;
       display: -moz-inline-stack;
       display: inline-block;
@@ -25,18 +25,18 @@
     }
 
     .all-any-none-wrapper,
-    .conditional,
+    .-arc-conditional,
     .rule {
       margin: 10px 0;
     }
 
     .add-rule,
     .add-condition,
-    .remove {
+    .-arc-remove {
       margin: auto 5px;
     }
 
-    .remove {
+    .-arc-remove {
       color: red;
     }
 
@@ -261,7 +261,7 @@
           var newPath = pathParts.join('.') + '.' + (i - 1);
           if (Polymer.dom(container).classList.contains('rule')) {
             this.updateLeafPath(container, oldPath, newPath);
-          } else if (Polymer.dom(container).classList.contains('conditional')) {
+          } else if (Polymer.dom(container).classList.contains('-arc-conditional')) {
             this.updateNodePath(container, oldPath, newPath);
           }
         }
@@ -288,7 +288,7 @@
         this.updatePathAttribute(addRuleButton, oldPath, newPath);
         var addConditionButton = Polymer.dom(container).querySelector('.add-condition');
         this.updatePathAttribute(addConditionButton, oldPath, newPath);
-        var removeButton = Polymer.dom(container).querySelector('.remove');
+        var removeButton = Polymer.dom(container).querySelector('.-arc-remove');
         this.updatePathAttribute(removeButton, oldPath, newPath);
 
         var childNodes = Polymer.dom(container).childNodes,
@@ -298,7 +298,7 @@
           child = childNodes[i];
           if (child.classList.contains('rule')) {
             this.updateLeafPath(child, oldPath, newPath);
-          } else if (child.classList.contains('conditional')) {
+          } else if (child.classList.contains('-arc-conditional')) {
             this.updateNodePath(child, oldPath, newPath);
           }
         }
@@ -313,7 +313,7 @@
         var operatorSelect = Polymer.dom(leaf).querySelector('.operator');
         var compareToSelect = Polymer.dom(leaf).querySelector('.compareTo');
         var value = Polymer.dom(leaf).querySelector('.value');
-        var removeButton = Polymer.dom(leaf).querySelector('.remove');
+        var removeButton = Polymer.dom(leaf).querySelector('.-arc-remove');
 
         this.updatePathAttribute(fieldSelect, oldPath, newPath);
         this.updatePathAttribute(operatorSelect, oldPath, newPath);
@@ -398,6 +398,20 @@
             hasCompareTargets = compareTargets.length > 0;
 
             switch (propType) {
+              case "file":
+              case "image":
+              case "code":
+              case "marked":
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+
+                field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                if (hasCompareTargets) {
+                  field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
+                }
+                break;
               case "string":
               case "password":
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
@@ -417,6 +431,10 @@
                 }
                 break;
               case "number":
+              case "date":
+              case "time":
+              case "datetime":
+              case "daterange":
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
@@ -699,7 +717,7 @@
         // build all-any-none select
         // ----------------------------------------
         var conditionsDiv = document.createElement('div');
-        Polymer.dom(conditionsDiv).classList.add('conditional');
+        Polymer.dom(conditionsDiv).classList.add('-arc-conditional');
         Polymer.dom(conditionsDiv).classList.add(kind);
         Polymer.dom(conditionsDiv).setAttribute('data-update-path', updatePath);
         Polymer.dom(htmlContainer).appendChild(conditionsDiv);
@@ -794,7 +812,7 @@
         // ------------------------------
         var removeLink = document.createElement('button');
         Polymer.dom(removeLink).setAttribute('type', 'button');
-        Polymer.dom(removeLink).classList.add('remove');
+        Polymer.dom(removeLink).classList.add('-arc-remove');
         Polymer.dom(removeLink).innerHTML = 'Remove This Sub-Condition';
         Polymer.dom(removeLink).setAttribute('data-update-path', updatePath);
 
@@ -846,7 +864,7 @@
         // ------------------------------
         var removeLink = document.createElement('button');
         Polymer.dom(removeLink).setAttribute('type', 'button');
-        Polymer.dom(removeLink).classList.add('remove');
+        Polymer.dom(removeLink).classList.add('-arc-remove');
         Polymer.dom(removeLink).innerHTML = "Remove";
         Polymer.dom(removeLink).setAttribute('data-update-path', updatePath);
         Polymer.dom(leafContainer).appendChild(removeLink);
@@ -912,7 +930,7 @@
         if (prevOperatorSelect !== undefined) {
           Polymer.dom(htmlContainer).removeChild(prevOperatorSelect);
         }
-        var removeButton = Polymer.dom(htmlContainer).querySelector('.remove');
+        var removeButton = Polymer.dom(htmlContainer).querySelector('.-arc-remove');
 
         var operators = selectedField.operators;
         var i, length = operators.length,
@@ -955,7 +973,7 @@
           Polymer.dom(htmlContainer).removeChild(prevCompareTo);
         }
 
-        var removeButton = Polymer.dom(htmlContainer).querySelector('.remove');
+        var removeButton = Polymer.dom(htmlContainer).querySelector('.-arc-remove');
         var fieldSelect = Polymer.dom(htmlContainer).querySelector('.field');
         var selectedFieldName = fieldSelect.value;
         var selectedField = this.getFieldByName(selectedFieldName);
@@ -1013,7 +1031,7 @@
         if (prevValueHtml !== undefined) {
           Polymer.dom(htmlContainer).removeChild(prevValueHtml);
         }
-        var removeButton = Polymer.dom(htmlContainer).querySelector('.remove');
+        var removeButton = Polymer.dom(htmlContainer).querySelector('.-arc-remove');
 
         var result = '';
         var fieldType = selectedCompareTo.getAttribute('data-field-type');
