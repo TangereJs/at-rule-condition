@@ -42,6 +42,21 @@
 
     .rule input {
       width: 250px;
+      font-family: 'Segoe UI', 'Segoe WP', 'Roboto', 'Frutiger', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0em;
+      outline: none;
+      -webkit-appearance: none;
+      -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+      line-height: 1.2142em;
+      padding: 0.67861em 1em;
+      font-size: 1em;
+      background: #ffffff;
+      border: 1px solid rgba(39, 41, 43, 0.15);
+      color: #212121;
+      border-radius: 2px;
+      box-shadow: 0em 0em 0em 0em transparent inset;
+      -webkit-transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
     .rule select {
@@ -108,7 +123,7 @@
       },
       _scopeCssViaAttr: true,
       _isReady: false,
-      hideTitleChanged: function (newValue, oldValue) {
+      hideTitleChanged: function(newValue, oldValue) {
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
       ready: function() {
@@ -119,7 +134,7 @@
         // this is part of infrastructure to centralize value updates
         // and manual triggering of value-change event
         // ------------------------------
-        this.$.conditionsHtmlContainer.addEventListener('change', function (event) {
+        this.$.conditionsHtmlContainer.addEventListener('change', function(event) {
           event.stopPropagation();
           var target = event.target;
           var updatePath = target.getAttribute('data-update-path');
@@ -177,18 +192,18 @@
           return;
         }
         var queryRoot = Polymer.dom(this.$.conditionsHtmlContainer);
-          tmp = queryRoot.querySelectorAll('select');
-          if (tmp.length > 0) {
-            this.pushArray1IntoArray2(tmp, selectElements);
-          }
-          tmp = queryRoot.querySelectorAll('input');
-          if (tmp.length > 0) {
-            this.pushArray1IntoArray2(tmp, inputElements);
-          }
-          tmp = queryRoot.querySelectorAll('button');
-          if (tmp.length > 0) {
-            this.pushArray1IntoArray2(tmp, aElements);
-          }
+        tmp = queryRoot.querySelectorAll('select');
+        if (tmp.length > 0) {
+          this.pushArray1IntoArray2(tmp, selectElements);
+        }
+        tmp = queryRoot.querySelectorAll('input');
+        if (tmp.length > 0) {
+          this.pushArray1IntoArray2(tmp, inputElements);
+        }
+        tmp = queryRoot.querySelectorAll('button');
+        if (tmp.length > 0) {
+          this.pushArray1IntoArray2(tmp, aElements);
+        }
 
         if (newValue) {
           for (selectIndex = 0; selectIndex < selectElements.length; selectIndex += 1) {
@@ -197,7 +212,7 @@
           }
           for (inputIndex = 0; inputIndex < inputElements.length; inputIndex += 1) {
             inputElement = inputElements[inputIndex];
-                        Polymer.dom(inputElement).setAttribute('disabled', 'disabled');
+            Polymer.dom(inputElement).setAttribute('disabled', 'disabled');
           }
           for (aIndex = 0; aIndex < aElements.length; aIndex += 1) {
             aElement = aElements[aIndex];
@@ -613,8 +628,8 @@
               return false;
             }
           } // else {
-            // xtype is not recognized; return false
-            //return false;
+          // xtype is not recognized; return false
+          //return false;
           //}
 
           // source and target are compatible; return true
