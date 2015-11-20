@@ -115,15 +115,15 @@
           type: String,
           value: 'When these conditions are met ...'
         },
-        hideTitle: {
+        hideLabel: {
           type: Boolean,
           value: false,
-          observer: 'hideTitleChanged'
+          observer: 'hideLabelChanged'
         }
       },
       _scopeCssViaAttr: true,
       _isReady: false,
-      hideTitleChanged: function(newValue, oldValue) {
+      hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
       ready: function() {
