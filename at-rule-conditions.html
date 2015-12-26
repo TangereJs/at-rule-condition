@@ -429,6 +429,7 @@
                 break;
               case "string":
               case "password":
+              case "textarea":
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("includes", "includes", "select"));
