@@ -943,7 +943,7 @@
       // ------------------------------
       createOperatorSelect: function(htmlContainer, selectedField, data, updatePath) {
         var prevOperatorSelect = Polymer.dom(htmlContainer).querySelector('.operator');
-        if (prevOperatorSelect !== undefined) {
+        if (prevOperatorSelect !== null && prevOperatorSelect !== undefined) {
           Polymer.dom(htmlContainer).removeChild(prevOperatorSelect);
         }
         var removeButton = Polymer.dom(htmlContainer).querySelector('.-arc-remove');
@@ -985,7 +985,7 @@
       // ------------------------------
       createOperatorCompareToSelect: function(htmlContainer, selectedOperatorOption, data, updatePath) {
         var prevCompareTo = Polymer.dom(htmlContainer).querySelector('.compareTo');
-        if (prevCompareTo !== undefined) {
+        if (prevCompareTo !== null && prevCompareTo !== undefined) {
           Polymer.dom(htmlContainer).removeChild(prevCompareTo);
         }
 
@@ -1033,7 +1033,7 @@
           this.createValueHtml(htmlContainer, selectedCompareTo, data, updatePath);
         } else {
           var prevValueHtml = Polymer.dom(htmlContainer).querySelector('.value');
-          if (prevValueHtml !== undefined) {
+          if (prevValueHtml !== null && prevValueHtml !== undefined) {
             Polymer.dom(htmlContainer).removeChild(prevValueHtml);
           }
         }

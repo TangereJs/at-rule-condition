@@ -1,0 +1,8 @@
+{
+  "name": "at-rule-conditions",
+  "version": "0.0.1.5",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  }
+}
