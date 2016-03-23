@@ -1,74 +1,81 @@
-<link rel="import" href="../at-core-theme/at-core-theme.html" />
+<link rel="import" href="../at-elements/at-designer-elements.html">
+<link rel="import" href="../tangere/tangere.html">
+<link rel="import" href="../at-i18n/at-i18n-behavior.html">
+<link rel="import" href="../at-theme/at-theme.html">
 
 <dom-module id="at-rule-conditions">
-  <style>
-    #conditionsHtmlContainer {
-      margin: 20px 0;
-    }
-
-    #conditionsHtmlContainer > .-arc-conditional > .-arc-remove {
-      display: none;
-    }
-
-    .-arc-conditional {
-      padding-left: 60px;
-    }
-
-    .-arc-conditional .all-any-none-wrapper {
-      margin: 5px 20px 5px -60px;
-      display: -moz-inline-stack;
-      display: inline-block;
-    }
-
-    .all-any-none {
-      margin-right: 10px;
-    }
-
-    .all-any-none-wrapper,
-    .-arc-conditional,
-    .rule {
-      margin: 10px 0;
-    }
-
-    .add-rule,
-    .add-condition,
-    .-arc-remove {
-      margin: auto 5px;
-    }
-
-    .-arc-remove {
-      color: red;
-    }
-
-    .rule input {
-      /*width: 250px;*/
-      font-family: 'Segoe UI', 'Segoe WP', 'Roboto', 'Frutiger', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      margin: 0em;
-      outline: none;
-      -webkit-appearance: none;
-      -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-      line-height: 1.2142em;
-      /*padding: 0.67861em 1em;*/
-      font-size: 1em;
-      background: #ffffff;
-      border: 1px solid rgba(39, 41, 43, 0.15);
-      color: #212121;
-      border-radius: 2px;
-      box-shadow: 0em 0em 0em 0em transparent inset;
-      -webkit-transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-      transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-
-    .rule select {
-      margin-right: 10px;
-    }
-
-    .hide-label {
-      display: none;
-    }
-  </style>
   <template>
-    <at-core-theme></at-core-theme>
+    <style>
+      #conditionsHtmlContainer {
+        margin: 20px 0;
+      }
+
+      #conditionsHtmlContainer > .-arc-conditional > .-arc-remove {
+        display: none;
+      }
+
+      .-arc-conditional {
+        padding-left: 60px;
+      }
+
+      .-arc-conditional .all-any-none-wrapper {
+        margin: 5px 20px 5px -60px;
+        display: -moz-inline-stack;
+        display: inline-block;
+      }
+
+      .all-any-none {
+        margin-right: 10px;
+      }
+
+      .all-any-none-wrapper,
+      .-arc-conditional,
+      .rule {
+        margin: 10px 0;
+      }
+
+      .add-rule,
+      .add-condition,
+      .-arc-remove {
+        margin: auto 5px;
+      }
+
+      .-arc-remove {
+        color: red;
+      }
+
+      .rule input {
+        /*width: 250px;*/
+        font-family: 'Segoe UI', 'Segoe WP', 'Roboto', 'Frutiger', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0em;
+        outline: none;
+        -webkit-appearance: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        line-height: 1.2142em;
+        /*padding: 0.67861em 1em;*/
+        font-size: 1em;
+        background: #ffffff;
+        border: 1px solid rgba(39, 41, 43, 0.15);
+        color: #212121;
+        border-radius: 2px;
+        box-shadow: 0em 0em 0em 0em transparent inset;
+        -webkit-transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      .rule .inline-element {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .rule select {
+        margin-right: 10px;
+      }
+
+      .hide-label {
+        display: none;
+      }
+    </style>
     <div id="labelContainer">
       <h4>{{label}}</h4>
     </div>
@@ -121,20 +128,19 @@
           observer: 'hideLabelChanged'
         }
       },
-      _scopeCssViaAttr: true,
-      _isReady: false,
       hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
       ready: function() {
-        this._isReady = true;
         var self = this;
         // ------------------------------
         // attach to the change event of the container and listen to change event
         // this is part of infrastructure to centralize value updates
         // and manual triggering of value-change event
         // ------------------------------
-        this.$.conditionsHtmlContainer.addEventListener('change', function(event) {
+        var conditionsHtmlContainer = this.$.conditionsHtmlContainer;
+        // this handles all at-form-elements
+        conditionsHtmlContainer.addEventListener('value-changed', function(event) {
           event.stopPropagation();
           var target = event.target;
           var updatePath = target.getAttribute('data-update-path');
@@ -144,6 +150,21 @@
             value: self.value
           });
         });
+
+        // this handles select and input elements
+        conditionsHtmlContainer.addEventListener('change', function(event) {
+          event.stopPropagation();
+          var target = event.target;
+          if (target.is) { return; }
+          var updatePath = target.getAttribute('data-update-path');
+          var value = target.value;
+          self.set(updatePath, value, self.value);
+          self.fire('value-changed', {
+            value: self.value
+          });
+        });
+
+        this._isReady = true;
       },
       schemaChanged: function(newValue, oldValue) {
         if (!this._isReady) {
@@ -422,7 +443,7 @@
                 field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
                 field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
 
-                field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                field.options.push(this.createFieldOption("Static", "static", undefined, propType));
                 if (hasCompareTargets) {
                   field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
                 }
@@ -441,7 +462,7 @@
                 field.operators.push(this.createOperatorDef("is greater than", "greaterThan", "select"));
                 field.operators.push(this.createOperatorDef("is greater than or equal to", "greaterThanEqual", "select"));
 
-                field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                field.options.push(this.createFieldOption("Static", "static", undefined, propType));
                 if (hasCompareTargets) {
                   field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
                 }
@@ -460,12 +481,13 @@
                 field.operators.push(this.createOperatorDef("is greater than", "greaterThan", "select"));
                 field.operators.push(this.createOperatorDef("is greater than or equal to", "greaterThanEqual", "select"));
 
-                field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                field.options.push(this.createFieldOption("Static", "static", undefined, propType));
                 if (hasCompareTargets) {
                   field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
                 }
                 break;
               case "boolean":
+              case "toggle":
                 field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
                 field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
                 var trueFalseOptionsArray = [{
@@ -476,7 +498,7 @@
                   label: "false"
                 }];
 
-                field.options.push(this.createFieldOption("Static", "static", trueFalseOptionsArray, "select"));
+                field.options.push(this.createFieldOption("Static", "static", undefined, propType));
                 if (hasCompareTargets) {
                   field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
                 }
@@ -495,7 +517,7 @@
 
 
                 if (hasEnumOptions) {
-                  field.options.push(this.createFieldOption("Static", "static", enumOptions, "select"));
+                  field.options.push(this.createFieldOption("Static", "static", enumOptions, propType));
                 } else {
                   field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
                 }
@@ -516,11 +538,13 @@
                 if (hasEnumOptions) {
                   field.options.push(this.createFieldOption("Static", "static", enumOptions, "select"));
                 } else {
-                  field.options.push(this.createFieldOption("Static", "static", undefined, "text"));
+                  field.options.push(this.createFieldOption("Static", "static", undefined, propType));
                 }
                 if (hasCompareTargets) {
                   field.options.push(this.createFieldOption("Field", "field", compareTargets, "select"));
                 }
+                break;
+              case "section":
                 break;
             }
             // end switch (propType)
@@ -548,6 +572,10 @@
         // ----------------------------------------
         getPropertyType: function(propDef) {
           var result = propDef.type;
+
+          if (result === "boolean" && propDef.hasOwnProperty('xtype') && propDef.xtype !== "") {
+            result = propDef.xtype;
+          }
 
           if (result === "string" && propDef.hasOwnProperty('xtype') && propDef.xtype !== "") {
             result = propDef.xtype;
@@ -977,8 +1005,9 @@
 
           self.createOperatorCompareToSelect(_container, selectedOperatorOption, _data, updatePath);
         });
-
-        this.createOperatorCompareToSelect(htmlContainer, selectedOperatorOption, data, updatePath);
+        if (selectedOperatorOption) {
+          this.createOperatorCompareToSelect(htmlContainer, selectedOperatorOption, data, updatePath);
+        }
       },
       // ------------------------------
       // creates select field with static and field options
@@ -1062,15 +1091,122 @@
             Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
             result.value = data.value;
             break;
-          case "text":
-            result = document.createElement('input');
-            Polymer.dom(result).setAttribute('type', 'text');
+          case "boolean":
+          case "toggle":
+            result = document.createElement('at-form-checkbox');
             Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            if (fieldType === "toggle") {
+              result.xtype = "toggle";
+            }
+            result.value = data.value;
+            break;
+          case "code":
+            result = document.createElement('at-form-codemirror');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "date":
+          case "time":
+          case "datetime":
+            result = document.createElement('at-form-date');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.xtype = fieldType;
+            result.value = data.value;
+            break;
+          case "daterange":
+            result = document.createElement('at-form-daterange');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "file":
+            result = document.createElement('at-form-file');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "image":
+            result = document.createElement('at-form-image');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "enum":
+            result = document.createElement('at-form-lookup');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            //set xvaluelist here
+            result.xvaluelist = options;
+            result.value = data.value;
+            break;
+          case "lookup":
+            result = document.createElement('at-form-lookup');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "marked":
+            result = document.createElement('at-form-markdown');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "number":
+            result = document.createElement('at-form-number');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "password":
+            result = document.createElement('at-form-password');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "radio":
+            result = document.createElement('at-form-radio');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            // set xvaluelist here
+            result.xvaluelist = options;
+            result.value = data.value;
+            break;
+          case "section":
+            // at-form-section doesn't make sense in conditions
+            result = document.createElement('div');
+            break;
+          case "string":
+            result = document.createElement('at-form-text');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
             Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
             result.value = data.value;
             break;
           case "textarea":
-            result = document.createElement('textarea');
+            result = document.createElement('at-form-textarea');
+            Polymer.dom(result).classList.add('value');
+            Polymer.dom(result).classList.add('inline-element');
+            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+            result.value = data.value;
+            break;
+          case "text":
+            result = document.createElement('input');
+            Polymer.dom(result).setAttribute('type', 'text');
             Polymer.dom(result).classList.add('value');
             Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
             result.value = data.value;

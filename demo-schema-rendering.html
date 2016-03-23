@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>at-rule-conditions Demo</title>
+
+  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../polymer/polymer.html" />
+  <link rel="import" href="../layout/layout.html" />
+  <link rel="import" href="at-rule-conditions.html" />
+</head>
+
+<body>
+  <div class="vertical layout">
+    <div class="horizontal layout">
+      <h2>Conditions Demo - json schema</h2>
+    </div>
+    <div class="horizontal layout">
+      <at-rule-conditions id="afConditions"></at-rule-conditions>
+    </div>
+
+    <div class="horizontal layout">
+      <div class="vertical layout flex-6">
+        <div class="horizontal layout">
+          <h3>at-rule-conditions value</h3>
+        </div>
+        <div class="horizontal layout">
+          <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
+        </div>
+      </div>
+      <div class="vertical layout flex-6">
+        <div class="horizontal layout">
+          <h3>at-rule-conditions schema</h3>
+        </div>
+        <div class="horizontal layout">
+          <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('WebComponentsReady', function() {
+
+      var jsonSchema = {
+        "properties": {
+          "checkboxDemo": {
+            "type": "boolean",
+            "title": "Checkbox demo"
+          },
+          "toggleDemo": {
+            "type": "boolean",
+            "xtype": "toggle",
+            "title": "Toggle demo"
+          },
+          "codeDemo": {
+            "type": "string",
+            "xtype": "code",
+            "title": "Code demo"
+          },
+          "dateDemo": {
+            "type": "string",
+            "xtype": "date",
+            "title": "Date demo"
+          },
+          "timeDemo": {
+            "type": "string",
+            "xtype": "time",
+            "title": "Time demo"
+          },
+          "dateAndTimeDemo": {
+            "type": "string",
+            "xtype": "datetime",
+            "title": "Date and time demo"
+          },
+          "daterangeDemo": {
+            "type": "daterange",
+            "title": "Daterange demo"
+          },
+          "fileDemo": {
+            "type": "string",
+            "xtype": "file",
+            "title": "File demo"
+          },
+          "imageDemo": {
+            "type": "string",
+            "xtype": "image",
+            "title": "Image demo"
+          },
+          "enumDemo": {
+            "type": "string",
+            "xtype": "enum",
+            "title": "Enum demo",
+            "xvaluelist": [{
+              title: "Value 1",
+              value:"value1"
+            }, {
+              title: "Value 2",
+              value:"value2"
+            }, {
+              title: "Value 3",
+              value:"value3"
+            }]
+          },
+          "lookupDemo": {
+            "type": "string",
+            "xtype": "lookup",
+            "title": "Lookup demo"
+          },
+          "markdownDemo": {
+            "type": "string",
+            "xtype": "marked",
+            "title": "Markdown demo"
+          },
+          "numberDemo": {
+            "type": "number",
+            "title": "Number demo"
+          },
+          "passwordDemo": {
+            "type": "string",
+            "xtype": "password",
+            "title": "Password demo"
+          },
+          "radioDemo": {
+            "type": "string",
+            "xtype": "radio",
+            "title": "Radio demo",
+            "xvaluelist": [{
+              title: "Value 1",
+              value:"value1"
+            }, {
+              title: "Value 2",
+              value:"value2"
+            }, {
+              title: "Value 3",
+              value:"value3"
+            }]
+          },
+          "sectionDemo": {
+            "type": "section",
+            "title": "Section demo"
+          },
+          "textDemo": {
+            "type": "string",
+            "title": "Text demo"
+          },
+          "textareaDemo": {
+            "type": "string",
+            "xtype": "textarea",
+            "title": "Textarea demo"
+          }
+        }
+      };
+
+      var jsonValue = {
+        "kind": "all",
+        "conditions": [{
+          "name": "checkboxDemo",
+          "operator": "equalTo",
+          "value": true,
+          "compareTo": "text"
+        }, {
+          "name": "toggleDemo",
+          "operator": "equalTo",
+          "value": false,
+          "compareTo": "text"
+        }, {
+          "name": "codeDemo",
+          "operator": "notEqualTo",
+          "value": "Lorem ipsum",
+          "compareTo": "text"
+        }, {
+          "name": "dateDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "timeDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "dateAndTimeDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "daterangeDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "fileDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "imageDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "enumDemo",
+          "operator": "equalTo",
+          "value": "value3",
+          "compareTo": "text"
+        }, {
+          "name": "lookupDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "markdownDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "numberDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "passwordDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "radioDemo",
+          "operator": "equalTo",
+          "value": "value2",
+          "compareTo": "text"
+        }, {
+          "name": "sectionDemo",
+          "operator": "equalTo",
+          "value": "",
+          "compareTo": "text"
+        }, {
+          "name": "textDemo",
+          "operator": "equalTo",
+          "value": "lorem ipsum",
+          "compareTo": "text"
+        }, {
+          "name": "textareaDemo",
+          "operator": "equalTo",
+          "value": "lorem ipsum",
+          "compareTo": "text"
+        }]
+      };
+
+      var conditionsValueEcho = document.getElementById('conditionsValueEcho');
+      var afConditions = document.getElementById('afConditions');
+      afConditions.schema = jsonSchema;
+      afConditions.value = jsonValue;
+
+      afConditions.addEventListener('value-changed', function(event) {
+        var jsonValue = JSON.stringify(event.detail.value, undefined, ' ');
+        conditionsValueEcho.value = jsonValue;
+      });
+
+      var valueJsonStr = JSON.stringify(jsonValue, undefined, ' ');
+      conditionsValueEcho.value = valueJsonStr;
+      conditionsValueEcho.addEventListener('change', function(event) {
+        var
+          jsonValue = event.currentTarget.value,
+          value = JSON.parse(jsonValue);
+
+        afConditions.value = value;
+      });
+
+      var conditionsSchema = document.getElementById('conditionsSchema');
+      conditionsSchema.value = JSON.stringify(jsonSchema, undefined, ' ');
+      conditionsSchema.addEventListener('change', function(event) {
+        var
+          jsonSchema = event.currentTarget.value,
+          schema = JSON.parse(jsonSchema);
+        afConditions.schema = schema;
+      });
+    });
+  </script>
+</body>
+
+</html>
