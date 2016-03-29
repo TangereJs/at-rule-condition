@@ -156,7 +156,9 @@
         conditionsHtmlContainer.addEventListener('change', function(event) {
           event.stopPropagation();
           var target = event.target;
-          if (target.is) { return; }
+          if (target.is) {
+            return;
+          }
           var updatePath = target.getAttribute('data-update-path');
           var value = target.value;
           self.set(updatePath, value, self.value);
@@ -1008,6 +1010,20 @@
         });
         if (selectedOperatorOption) {
           this.createOperatorCompareToSelect(htmlContainer, selectedOperatorOption, data, updatePath);
+        } else {
+          // we are rendering for at-form-section so we need to clear previous html
+          prevOperatorSelect = Polymer.dom(htmlContainer).querySelector('.operator');
+          if (prevOperatorSelect) {
+            Polymer.dom(htmlContainer).removeChild(prevOperatorSelect);
+          }
+          var prevCompareTo = Polymer.dom(htmlContainer).querySelector('.compareTo');
+          if (prevCompareTo) {
+            Polymer.dom(htmlContainer).removeChild(prevCompareTo);
+          }
+          var prevValueHtml = Polymer.dom(htmlContainer).querySelector('.value');
+          if (prevValueHtml) {
+            Polymer.dom(htmlContainer).removeChild(prevValueHtml);
+          }
         }
       },
       // ------------------------------
@@ -1084,150 +1100,85 @@
         var optionsJson = selectedCompareTo.getAttribute('data-options');
         var options = JSON.parse(optionsJson);
 
-        switch (fieldType) {
-          case "none":
-            result = document.createElement('input');
-            Polymer.dom(result).setAttribute('type', 'hidden');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "boolean":
-          case "toggle":
-            result = document.createElement('at-form-checkbox');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            if (fieldType === "toggle") {
-              result.xtype = "toggle";
-            }
-            result.value = data.value;
-            break;
-          case "code":
-            result = document.createElement('at-form-codemirror');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "date":
-          case "time":
-          case "datetime":
-            result = document.createElement('at-form-date');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.xtype = fieldType;
-            result.value = data.value;
-            break;
-          case "daterange":
-            result = document.createElement('at-form-daterange');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "file":
-            result = document.createElement('at-form-file');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "image":
-            result = document.createElement('at-form-image');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "enum":
-            result = document.createElement('at-form-lookup');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            //set xvaluelist here
-            result.xvaluelist = options;
-            result.value = data.value;
-            break;
-          case "lookup":
-            result = document.createElement('at-form-lookup');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "marked":
-            result = document.createElement('at-form-markdown');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "number":
-            result = document.createElement('at-form-number');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "password":
-            result = document.createElement('at-form-password');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "radio":
-            result = document.createElement('at-form-radio');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            // set xvaluelist here
-            result.xvaluelist = options;
-            result.value = data.value;
-            break;
-          case "section":
-            // at-form-section doesn't make sense in conditions
-            result = document.createElement('div');
-            break;
-          case "string":
-            result = document.createElement('at-form-text');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "textarea":
-            result = document.createElement('at-form-textarea');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).classList.add('inline-element');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "text":
-            result = document.createElement('input');
-            Polymer.dom(result).setAttribute('type', 'text');
-            Polymer.dom(result).classList.add('value');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            result.value = data.value;
-            break;
-          case "select":
-            result = document.createElement('select');
-            Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
-            Polymer.dom(result).classList.add('value');
+        if (fieldType === "none") {
+          result = document.createElement('input');
+          Polymer.dom(result).setAttribute('type', 'hidden');
 
-            for (var i = 0; i < options.length; i++) {
-              var option = options[i];
-              var optionLabel = option.label || option.title || option.name;
-              var optionName = option.name || option.value;
-              var htmlOption = this.createSelectOption(optionName, optionLabel, data.value === optionName);
-              Polymer.dom(result).appendChild(htmlOption);
-            }
-            data.value = result.value;
-            break;
+        } else if (fieldType === "text") {
+          result = document.createElement('input');
+          Polymer.dom(result).setAttribute('type', 'text');
+        } else if (fieldType === "select") {
+          result = document.createElement('select');
+          for (var i = 0; i < options.length; i++) {
+            var option = options[i];
+            var optionLabel = option.label || option.title || option.name;
+            var optionName = option.name || option.value;
+            var htmlOption = this.createSelectOption(optionName, optionLabel, data.value === optionName);
+            Polymer.dom(result).appendChild(htmlOption);
+          }
+        } else {
+          switch (fieldType) {
+            case "boolean":
+            case "toggle":
+              result = document.createElement('at-form-checkbox');
+              if (fieldType === "toggle") {
+                result.xtype = "toggle";
+              }
+              break;
+            case "code":
+              result = document.createElement('at-form-codemirror');
+              break;
+            case "date":
+            case "time":
+            case "datetime":
+              result = document.createElement('at-form-date');
+              result.xtype = fieldType;
+              break;
+            case "daterange":
+              result = document.createElement('at-form-daterange');
+              break;
+            case "file":
+              result = document.createElement('at-form-file');
+              break;
+            case "image":
+              result = document.createElement('at-form-image');
+              break;
+            case "enum":
+              result = document.createElement('at-form-lookup');
+              result.xvaluelist = options;
+              break;
+            case "lookup":
+              result = document.createElement('at-form-lookup');
+              break;
+            case "marked":
+              result = document.createElement('at-form-markdown');
+              break;
+            case "number":
+              result = document.createElement('at-form-number');
+              break;
+            case "password":
+              result = document.createElement('at-form-password');
+              break;
+            case "radio":
+              result = document.createElement('at-form-radio');
+              result.xvaluelist = options;
+              break;
+            case "section":
+              // at-form-section doesn't make sense in conditions
+              result = document.createElement('div');
+              break;
+            case "string":
+              result = document.createElement('at-form-text');
+              break;
+            case "textarea":
+              result = document.createElement('at-form-textarea');
+              break;
+          }
+          Polymer.dom(result).classList.add('inline-element');
         }
-
+        Polymer.dom(result).classList.add('value');
+        Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
+        result.value = data.value;
         Polymer.dom(htmlContainer).insertBefore(result, removeButton);
       },
       getFieldByName: function(fieldName) {
