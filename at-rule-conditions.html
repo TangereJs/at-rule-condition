@@ -140,17 +140,6 @@
         // and manual triggering of value-change event
         // ------------------------------
         var conditionsHtmlContainer = this.$.conditionsHtmlContainer;
-        // this handles all at-form-elements
-        conditionsHtmlContainer.addEventListener('value-changed', function(event) {
-          event.stopPropagation();
-          var target = event.target;
-          var updatePath = target.getAttribute('data-update-path');
-          var value = target.value;
-          self.set(updatePath, value, self.value);
-          self.fire('value-changed', {
-            value: self.value
-          });
-        });
 
         // this handles select and input elements
         conditionsHtmlContainer.addEventListener('change', function(event) {
@@ -1175,6 +1164,17 @@
               break;
           }
           Polymer.dom(result).classList.add('inline-element');
+          var self = this;
+          result.addEventListener('value-changed', function(event) {
+            event.stopPropagation();
+            var target = event.target;
+            var updatePath = target.getAttribute('data-update-path');
+            var value = target.value;
+            self.set(updatePath, value, self.value);
+            self.fire('value-changed', {
+              value: self.value
+            });
+          });
         }
         Polymer.dom(result).classList.add('value');
         Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));

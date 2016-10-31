@@ -1,6 +1,6 @@
 {
   "name": "at-rule-conditions",
-  "version": "0.0.1.7",
+  "version": "0.0.1.11",
   "private": true,
   "dependencies": {
     "tangere": "TangereJs/tangere#0.8-preview",
