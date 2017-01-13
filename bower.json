@@ -5,8 +5,6 @@
   "dependencies": {
     "tangere": "TangereJs/tangere#master",
     "at-theme": "TangereJs/at-theme#master",
-    "at-i18n": "TangereJs/at-i18n#master",
-    "at-elements": "TangereJs/at-elements#master",
-    "layout": "polymer/layout#master"
+    "at-i18n": "TangereJs/at-i18n#master"
   }
 }
