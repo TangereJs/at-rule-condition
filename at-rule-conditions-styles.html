@@ -1,0 +1,29 @@
+<link rel="import" href="../tangere/tangere.html" />
+
+<dom-module id="at-rule-conditions-styles">
+  <template>
+    <style>
+
+    .conditions-title {
+      @apply(--paper-font-body1);
+      font-weight: 600;
+      font-size: 18px;
+      margin: 0 0 8px 0;
+    }
+
+    .conditions-title[hidden] {
+      display: none; 
+    }
+
+    .text {
+      @apply(--paper-font-body1);
+    }
+
+    .all-any-none {
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+    </style>
+  </template>
+</dom-module>

@@ -2,10 +2,16 @@
 <link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
 <link rel="import" href="../at-elements/at-designer-elements.html">
+<link rel="import" href="at-rule-conditions-styles.html" />
 
 <dom-module id="at-rule-conditions">
   <template>
+    <style include="at-rule-conditions-styles"></style>
     <style>
+      .debug * {
+        border: 1px solid purple;
+      }
+
       #conditionsHtmlContainer {
         margin: 20px 0;
       }
@@ -22,10 +28,6 @@
         margin: 5px 20px 5px -60px;
         display: -moz-inline-stack;
         display: inline-block;
-      }
-
-      .all-any-none {
-        margin-right: 10px;
       }
 
       .all-any-none-wrapper,
@@ -77,10 +79,23 @@
         display: none;
       }
     </style>
-    <div id="labelContainer">
-      <h4>{{label}}</h4>
+    <div class="debug">
+      <h4 class="conditions-title" hidden$="[[hideLabel]]" >{{label}}</h4>
+
+      <div>
+        <div>
+          <span class="text">When</span>
+          <at-form-lookup available="all,any,none" value="[[value.kind]]" class="all-any-none"></at-form-lookup>
+          <span class="text">of the following conditions: </span>          
+        </div>
+        <template is="dom-repeat" items="value.conditions" as="condition">
+          
+
+        </template>        
+      </div>
+
+      <div id="conditionsHtmlContainer"></div>      
     </div>
-    <div id="conditionsHtmlContainer"></div>
   </template>
   <script>
     'use strict';
@@ -90,6 +105,7 @@
     Polymer({
       is: 'at-rule-conditions',
       properties: {
+
         schema: {
           type: Object,
           value: function() {
@@ -97,6 +113,7 @@
           },
           observer: 'schemaChanged'
         },
+
         config: {
           type: Array,
           value: function() {
@@ -104,6 +121,7 @@
           },
           observer: 'configChanged',
         },
+
         value: {
           type: Object,
           value: function() {
@@ -125,13 +143,10 @@
         },
         hideLabel: {
           type: Boolean,
-          value: false,
-          observer: 'hideLabelChanged'
+          value: false
         }
       },
-      hideLabelChanged: function(newValue, oldValue) {
-        this.toggleClass("hide-label", newValue, this.$.labelContainer);
-      },
+      
       ready: function() {
         var self = this;
         // ------------------------------
@@ -158,6 +173,7 @@
 
         this._isReady = true;
       },
+
       schemaChanged: function(newValue, oldValue) {
         if (!this._isReady) {
           return;
@@ -169,25 +185,29 @@
           this.value = t_config.value.data;
         }
       },
+
       configChanged: function(newValue, oldValue) {
-        if (!this._isReady) {
+        if (!this._isReady || !newValue) {
           return;
         }
 
         this._rebuildConditionsHtml();
       },
+
       valueChanged: function(newValue, oldValue) {
-        if (!this._isReady) {
+        if (!this._isReady || !newValue) {
           return;
         }
 
         this._rebuildConditionsHtml();
       },
+
       _rebuildConditionsHtml: function() {
         Polymer.dom(this.$.conditionsHtmlContainer).innerHTML = '';
         this.buildConditionsHtml(this.$.conditionsHtmlContainer, this.config, this.value);
         this.disabledChanged(this.disabled);
       },
+
       disabledChanged: function(newValue, oldValue) {
         var
           selectIndex,
