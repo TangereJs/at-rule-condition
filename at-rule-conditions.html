@@ -862,7 +862,7 @@
         var fieldSelect = this.createFieldSelect(fields, data, updatePath);
         Polymer.dom(leafContainer).insertBefore(fieldSelect, removeLink);
 
-        fieldSelect.addEventListener('change', function(event) {
+        fieldSelect.addEventListener('value-changed', function(event) {
           var _fields = fields;
           var _container = leafContainer;
           var updatePath = _container.getAttribute('data-update-path');
@@ -886,18 +886,22 @@
       // creates the select with available fields
       // ------------------------------
       createFieldSelect: function(fields, data, updatePath) {
-        var fieldSelect = document.createElement('select');
+        var fieldSelect = document.createElement('at-form-lookup');
         Polymer.dom(fieldSelect).classList.add('field');
         Polymer.dom(fieldSelect).setAttribute('data-update-path', this.createPath(updatePath, 'name'));
-        var index, length = fields.length,
-          field, option;
+        var index;
+        var length = fields.length;
+        var field; 
+        var option;
+
+        var xvaluelist = [];
 
         for (index = 0; index < length; index += 1) {
           field = fields[index];
-          option = this.createSelectOption(field.name, field.label, data.name === field.name);
-          Polymer.dom(option).setAttribute('options', JSON.stringify(field.options));
-          Polymer.dom(fieldSelect).appendChild(option);
+          xvaluelist.push({ title: field.label, value: field.name, options: field.options });
         }
+        fieldSelect.xvaluelist = xvaluelist;
+        fieldSelect.value = data.name;
         return fieldSelect;
       },
       // ------------------------------
@@ -913,29 +917,29 @@
         var operators = selectedField.operators;
         var i, length = operators.length,
           operator, option;
-        var operatorSelect = document.createElement('select');
+        var operatorSelect = document.createElement('at-form-lookup');
         Polymer.dom(operatorSelect).setAttribute('data-update-path', this.createPath(updatePath, 'operator'));
         Polymer.dom(operatorSelect).classList.add('operator');
+        var xvaluelist = [];
 
         for (i = 0; i < length; i += 1) {
           operator = operators[i];
-          option = this.createSelectOption(operator.name, operator.label, operator.name === data.operator);
-          Polymer.dom(option).setAttribute('data-field-type', operator.fieldType);
-          Polymer.dom(option).setAttribute('data-compare-to', data.compareTo);
-          Polymer.dom(operatorSelect).appendChild(option);
+          xvaluelist.push({ title: operator.label, value: operator.name, fieldType: operator.fieldType, compareTo: data.compareTo});
         }
+        operatorSelect.xvaluelist = xvaluelist;
+        operatorSelect.value = data.operator;
 
         Polymer.dom(htmlContainer).insertBefore(operatorSelect, removeButton);
 
-        var selectedOperatorOption = Polymer.dom(operatorSelect).querySelector('option:checked');
+        var selectedOperatorOption = operatorSelect.selectedItems.length ? operatorSelect.selectedItems[0] : false;      
         var self = this;
 
-        operatorSelect.addEventListener('change', function(event) {
+        operatorSelect.addEventListener('value-changed', function(event) {
           var _container = htmlContainer;
           var _data = data;
           var updatePath = _container.getAttribute('data-update-path');
           var target = event.target;
-          var selectedOperatorOption = Polymer.dom(target).querySelector('option:checked');
+          var selectedOperatorOption = target.selectedItems[0];
 
           self.createOperatorCompareToSelect(_container, selectedOperatorOption, _data, updatePath);
         });
@@ -971,42 +975,44 @@
         var selectedFieldName = fieldSelect.value;
         var selectedField = this.getFieldByName(selectedFieldName);
 
-        var fieldType = selectedOperatorOption.getAttribute('data-field-type');
-        var compareTo = selectedOperatorOption.getAttribute('data-compare-to');
+        var fieldType = selectedOperatorOption.fieldType;
+        var compareTo = selectedOperatorOption.compareTo;
         var options = selectedField.options,
           i, length = options.length,
           option, htmlOption;
 
         var result = '';
         if (fieldType === "select") {
-          result = document.createElement('select');
+          result = document.createElement('at-form-lookup');
           Polymer.dom(result).classList.add('compareTo');
           Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'compareTo'));
-
+          var xvaluelist = [];
           for (var i = 0; i < length; i++) {
             option = options[i];
-            htmlOption = this.createSelectOption(option.name, option.label || option.name, compareTo === option.name);
-            Polymer.dom(htmlOption).setAttribute('data-field-type', option.fieldType);
-            if (option.options !== undefined) {
-              Polymer.dom(htmlOption).setAttribute('data-options', JSON.stringify(option.options));
-            }
-            Polymer.dom(result).appendChild(htmlOption);
+            xvaluelist.push({ 
+              title: option.label || option.name, 
+              value: option.name, 
+              fieldType: option.fieldType,
+              options: option.options
+            });
           }
+          result.xvaluelist = xvaluelist;
+          result.value = compareTo === 'text' ? 'static' : compareTo;
 
           Polymer.dom(htmlContainer).insertBefore(result, removeButton);
           var self = this;
-          result.addEventListener('change', function(event) {
+          result.addEventListener('value-changed', function(event) {
             var _container = htmlContainer;
             var target = event.target;
             var parentNode = Polymer.dom(target).parentNode;
             var updatePath = parentNode.getAttribute('data-update-path');
             var _data = data
-            var selectedCompareTo = Polymer.dom(target).querySelector('option:checked');
+            var selectedCompareTo = target.selectedItems[0];
 
             self.createValueHtml(_container, selectedCompareTo, data, updatePath);
           });
 
-          var selectedCompareTo = Polymer.dom(result).querySelector('option:checked');
+          var selectedCompareTo = result.selectedItems[0];
           this.createValueHtml(htmlContainer, selectedCompareTo, data, updatePath);
         } else {
           var prevValueHtml = Polymer.dom(htmlContainer).querySelector('.value');
@@ -1027,9 +1033,8 @@
         var removeButton = Polymer.dom(htmlContainer).querySelector('.-arc-remove');
 
         var result = '';
-        var fieldType = selectedCompareTo.getAttribute('data-field-type');
-        var optionsJson = selectedCompareTo.getAttribute('data-options');
-        var options = JSON.parse(optionsJson);
+        var fieldType = selectedCompareTo.fieldType;
+        var options = selectedCompareTo.options;
 
         if (fieldType === "none") {
           result = document.createElement('input');
@@ -1039,14 +1044,16 @@
           result = document.createElement('input');
           Polymer.dom(result).setAttribute('type', 'text');
         } else if (fieldType === "select") {
-          result = document.createElement('select');
+          result = document.createElement('at-form-lookup');
+          var xvaluelist = [];
           for (var i = 0; i < options.length; i++) {
             var option = options[i];
             var optionLabel = option.label || option.title || option.name;
             var optionName = option.name || option.value;
-            var htmlOption = this.createSelectOption(optionName, optionLabel, data.value === optionName);
-            Polymer.dom(result).appendChild(htmlOption);
+            xvaluelist.push({ title: optionLabel, value: optionName });
           }
+          result.xvaluelist = xvaluelist;
+          result.value = data.value;
         } else {
           switch (fieldType) {
             case "boolean":
