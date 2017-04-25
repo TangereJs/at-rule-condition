@@ -681,14 +681,13 @@
         this.buildNodeHtml(htmlContainer, fields, data, updatePath);
       },
       buildNodeHtml: function(htmlContainer, fields, data, updatePath) {
-        var
-          kind = data.kind,
-          index,
-          condition,
-          length = data.conditions.length,
-          isLeaf,
-          self = this,
-          _fields = fields;
+        var kind = data.kind;
+        var index;
+        var condition;
+        var length = data.conditions.length;
+        var isLeaf;
+        var self = this;
+        var _fields = fields;
 
         // ----------------------------------------
         // build all-any-none select
@@ -702,16 +701,18 @@
         var allAnyNoneWrapper = document.createElement('div');
         Polymer.dom(allAnyNoneWrapper).classList.add('all-any-none-wrapper');
 
-        var allAnyNoneSelect = document.createElement('select');
+        var allAnyNoneSelect = document.createElement('at-form-lookup');
         Polymer.dom(allAnyNoneSelect).classList.add('all-any-none');
         Polymer.dom(allAnyNoneSelect).setAttribute('data-update-path', this.createPath(updatePath, 'kind'));
 
-        var option = this.createSelectOption("all", "All", kind === "all");
-        Polymer.dom(allAnyNoneSelect).appendChild(option);
-        option = this.createSelectOption("any", "Any", kind === "any");
-        Polymer.dom(allAnyNoneSelect).appendChild(option);
-        option = this.createSelectOption("none", "None", kind === "none");
-        Polymer.dom(allAnyNoneSelect).appendChild(option);
+        allAnyNoneSelect.xvaluelist = [
+          { title: "All", value: "all" },
+          { title: "Any", value: "any" },
+          { title: "None", value: "none" }
+        ];
+        allAnyNoneSelect.value = kind;
+        allAnyNoneSelect.addEventListener('value-changed', this._handleValueChanged.bind(this));
+
         Polymer.dom(allAnyNoneWrapper).appendChild(allAnyNoneSelect);
 
         var span = document.createElement('span');
@@ -1105,23 +1106,27 @@
               break;
           }
           Polymer.dom(result).classList.add('inline-element');
-          var self = this;
-          result.addEventListener('value-changed', function(event) {
-            event.stopPropagation();
-            var target = event.target;
-            var updatePath = target.getAttribute('data-update-path');
-            var value = target.value;
-            self.set(updatePath, value, self.value);
-            self.fire('value-changed', {
-              value: self.value
-            });
-          });
+          result.addEventListener('value-changed', this._handleValueChanged.bind(this));
         }
         Polymer.dom(result).classList.add('value');
         Polymer.dom(result).setAttribute('data-update-path', this.createPath(updatePath, 'value'));
         result.value = data.value;
         Polymer.dom(htmlContainer).insertBefore(result, removeButton);
       },
+
+      _handleValueChanged: function(event) {
+        event.stopPropagation();
+        var target = event.target;
+        var updatePath = target.getAttribute('data-update-path');
+        var value = target.value;
+        this.set(updatePath, value, this.value);
+        this.fire('value-changed', {
+          value: this.value
+        }, {
+          bubbles: false
+        });
+      },
+
       getFieldByName: function(fieldName) {
         var fields = this.config,
           i,
