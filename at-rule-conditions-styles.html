@@ -3,27 +3,85 @@
 <dom-module id="at-rule-conditions-styles">
   <template>
     <style>
+      .conditions-title {
+        @apply(--paper-font-body1);
+        font-weight: 600;
+        font-size: 18px;
+        margin: 0;
+      }
 
-    .conditions-title {
-      @apply(--paper-font-body1);
-      font-weight: 600;
-      font-size: 18px;
-      margin: 0 0 8px 0;
-    }
+      .conditions-title[hidden] {
+        display: none;
+      }
 
-    .conditions-title[hidden] {
-      display: none; 
-    }
+      .text {
+        @apply(--paper-font-body1);
+      }
 
-    .text {
-      @apply(--paper-font-body1);
-    }
+      .all-any-none {
+        vertical-align: middle;
+        display: inline-block;
+      }
 
-    .all-any-none {
-      vertical-align: middle;
-      display: inline-block;
-    }
 
+      #conditionsHtmlContainer>.-arc-conditional>.-arc-remove {
+        display: none;
+      }
+
+      .-arc-conditional {
+        padding-left: 60px;
+      }
+
+      .-arc-conditional .all-any-none-wrapper {
+        margin: 5px 20px 5px -60px;
+        display: -moz-inline-stack;
+        display: inline-block;
+      }
+
+      .all-any-none-wrapper,
+      .-arc-conditional,
+      .rule {
+        margin: 10px 0;
+      }
+
+      .add-rule,
+      .add-condition,
+      .-arc-remove {
+        margin: auto 5px;
+      }
+
+      .-arc-remove {
+        color: red;
+      }
+
+      .rule input {
+        /*width: 250px;*/
+        font-family: 'Segoe UI', 'Segoe WP', 'Roboto', 'Frutiger', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0em;
+        outline: none;
+        -webkit-appearance: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        line-height: 1.2142em;
+        /*padding: 0.67861em 1em;*/
+        font-size: 1em;
+        background: #ffffff;
+        border: 1px solid rgba(39, 41, 43, 0.15);
+        color: #212121;
+        border-radius: 2px;
+        box-shadow: 0em 0em 0em 0em transparent inset;
+        -webkit-transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      .rule .inline-element {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 10px;
+      }
+
+      .rule select {
+        margin-right: 10px;
+      }
     </style>
   </template>
 </dom-module>

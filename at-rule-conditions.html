@@ -11,89 +11,10 @@
       .debug * {
         border: 1px solid purple;
       }
-
-      #conditionsHtmlContainer {
-        margin: 20px 0;
-      }
-
-      #conditionsHtmlContainer > .-arc-conditional > .-arc-remove {
-        display: none;
-      }
-
-      .-arc-conditional {
-        padding-left: 60px;
-      }
-
-      .-arc-conditional .all-any-none-wrapper {
-        margin: 5px 20px 5px -60px;
-        display: -moz-inline-stack;
-        display: inline-block;
-      }
-
-      .all-any-none-wrapper,
-      .-arc-conditional,
-      .rule {
-        margin: 10px 0;
-      }
-
-      .add-rule,
-      .add-condition,
-      .-arc-remove {
-        margin: auto 5px;
-      }
-
-      .-arc-remove {
-        color: red;
-      }
-
-      .rule input {
-        /*width: 250px;*/
-        font-family: 'Segoe UI', 'Segoe WP', 'Roboto', 'Frutiger', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        margin: 0em;
-        outline: none;
-        -webkit-appearance: none;
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-        line-height: 1.2142em;
-        /*padding: 0.67861em 1em;*/
-        font-size: 1em;
-        background: #ffffff;
-        border: 1px solid rgba(39, 41, 43, 0.15);
-        color: #212121;
-        border-radius: 2px;
-        box-shadow: 0em 0em 0em 0em transparent inset;
-        -webkit-transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-      }
-
-      .rule .inline-element {
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 10px;
-      }
-
-      .rule select {
-        margin-right: 10px;
-      }
-
-      .hide-label {
-        display: none;
-      }
     </style>
     <div class="debug">
       <h4 class="conditions-title" hidden$="[[hideLabel]]" >{{label}}</h4>
-
-      <div>
-        <div>
-          <span class="text">When</span>
-          <at-form-lookup available="all,any,none" value="[[value.kind]]" class="all-any-none"></at-form-lookup>
-          <span class="text">of the following conditions: </span>          
-        </div>
-        <template is="dom-repeat" items="value.conditions" as="condition">
-          
-
-        </template>        
-      </div>
-
+      
       <div id="conditionsHtmlContainer"></div>      
     </div>
   </template>
