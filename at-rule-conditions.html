@@ -3,6 +3,7 @@
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
 <link rel="import" href="../at-elements/at-designer-elements.html">
 <link rel="import" href="at-rule-conditions-styles.html" />
+<link rel="import" href="../at-carbon-menu-button/at-carbon-menu-button.html" />
 
 <dom-module id="at-rule-conditions">
   <template>
@@ -253,10 +254,10 @@
         this.updatePathAttribute(kindSelect, oldPath, newPath);
 
         // update buttons
-        var addRuleButton = Polymer.dom(container).querySelector('.add-rule');
+        var addRuleButton = Polymer.dom(container).querySelector('.conditions-menu');
         this.updatePathAttribute(addRuleButton, oldPath, newPath);
-        var addConditionButton = Polymer.dom(container).querySelector('.add-condition');
-        this.updatePathAttribute(addConditionButton, oldPath, newPath);
+        // var addConditionButton = Polymer.dom(container).querySelector('.add-condition');
+        // this.updatePathAttribute(addConditionButton, oldPath, newPath);
         var removeButton = Polymer.dom(container).querySelector('.-arc-remove');
         this.updatePathAttribute(removeButton, oldPath, newPath);
 
@@ -717,6 +718,7 @@
 
         var span = document.createElement('span');
         Polymer.dom(span).innerHTML = "of the following conditions:";
+        Polymer.dom(span).classList.add('text');
 
         Polymer.dom(allAnyNoneWrapper).appendChild(span);
         Polymer.dom(conditionsDiv).appendChild(allAnyNoneWrapper);
@@ -725,81 +727,71 @@
         // create add condition button
         // ------------------------------
 
-        var addRuleLink = document.createElement("button");
-        Polymer.dom(addRuleLink).classList.add('add-rule');
-        Polymer.dom(addRuleLink).setAttribute('type', 'button');
-        Polymer.dom(addRuleLink).setAttribute('data-update-path', this.createPath(updatePath, 'conditions'));
-        Polymer.dom(addRuleLink).innerHTML = "Add Condition";
+        var menuItems = [
+          { title: 'Add condition', value: "addCondition", icon: "now:plus"},
+          { title: 'Add sub-condition', value: "addSubCondition", icon: "now:plus"}
+        ];
+        var addMenu = document.createElement('at-carbon-menu-button');        
+        addMenu.items = menuItems;
+        Polymer.dom(addMenu).classList.add('conditions-menu');
+        Polymer.dom(addMenu).setAttribute('data-update-path', this.createPath(updatePath, 'conditions'));
+        addMenu.addEventListener('value-changed', function(event){
+          var value = event.detail.value;
 
-        addRuleLink.addEventListener('click', function(e) {
           var _fields = fields;
           var _htmlContainer = conditionsDiv;
           var aField = _fields[0];
-
-          var data = {
-            name: aField.name,
-            operator: aField.operators[0].name,
-            compareTo: "text",
-            value: ""
-          };
-          var updatePath = e.target.getAttribute('data-update-path');
+          var data = {};
+          
+          var updatePath = event.currentTarget.getAttribute('data-update-path');
           var conditionData = self.get(updatePath, self.value);
           var index = conditionData.length;
           var newPath = self.createPath(updatePath, index);
 
-          self.buildLeafHtml(_htmlContainer, _fields, data, newPath);
-          self.addCondition(updatePath, data);
-        });
-        Polymer.dom(conditionsDiv).appendChild(addRuleLink);
-
-        // ------------------------------
-        // create add sub-condition button
-        // ------------------------------
-        var addConditionLink = document.createElement("button");
-        Polymer.dom(addConditionLink).classList.add('add-condition');
-        Polymer.dom(addConditionLink).setAttribute('type', 'button');
-        Polymer.dom(addConditionLink).setAttribute('data-update-path', this.createPath(updatePath, 'conditions'));
-        Polymer.dom(addConditionLink).innerHTML = "Add Sub-Condition";
-
-        addConditionLink.addEventListener('click', function(e) {
-          var _fields = fields;
-          var _htmlContainer = conditionsDiv;
-          var aField = _fields[0];
-
-          var data = {
-            kind: "all",
-            conditions: [{
+          if (value === "addCondition") {
+            data = {
               name: aField.name,
               operator: aField.operators[0].name,
               compareTo: "text",
-              value: ''
-            }]
-          };
-          var updatePath = e.target.getAttribute('data-update-path');
-          var conditionData = self.get(updatePath, self.value);
-          var index = conditionData.length;
-          var localPath = self.createPath(updatePath, index);
-          self.buildNodeHtml(_htmlContainer, _fields, data, localPath);
+              value: ""
+            };
+            self.buildLeafHtml(_htmlContainer, _fields, data, newPath);
+          } else if (value === "addSubCondition") {
+            data = {
+              kind: "all",
+              conditions: [{
+                name: aField.name,
+                operator: aField.operators[0].name,
+                compareTo: "text",
+                value: ''
+              }]
+            };
+            self.buildNodeHtml(_htmlContainer, _fields, data, newPath);
+          }
 
           self.addCondition(updatePath, data);
         });
-        Polymer.dom(conditionsDiv).appendChild(addConditionLink);
+        Polymer.dom(conditionsDiv).appendChild(addMenu);
 
         // ------------------------------
         // create remove condition / sub-condition button
         // ------------------------------
-        var removeLink = document.createElement('button');
-        Polymer.dom(removeLink).setAttribute('type', 'button');
+        var removeLink = document.createElement('at-carbon-icon-button');
         Polymer.dom(removeLink).classList.add('-arc-remove');
-        Polymer.dom(removeLink).innerHTML = 'Remove This Sub-Condition';
+        removeLink.icon = "now:trash";
+        removeLink.color = "red";
         Polymer.dom(removeLink).setAttribute('data-update-path', updatePath);
 
-        removeLink.addEventListener('click', function(e) {
+        removeLink.addEventListener('tap', function(e) {
           var remElem = conditionsDiv;
           var remElemParent = Polymer.dom(remElem).parentNode;
           Polymer.dom(remElemParent).removeChild(remElem);
 
-          var updatePath = e.target.getAttribute('data-update-path');
+          var upElement = e.target;
+          while(upElement.nodeName !== "AT-CARBON-ICON-BUTTON") {
+            upElement = upElement.parentElement;
+          }
+          var updatePath = upElement.getAttribute('data-update-path');
           self.removeCondition(updatePath);
         });
         Polymer.dom(conditionsDiv).appendChild(removeLink);
@@ -840,10 +832,10 @@
         // ------------------------------
         // create the remove button
         // ------------------------------
-        var removeLink = document.createElement('button');
-        Polymer.dom(removeLink).setAttribute('type', 'button');
+        var removeLink = document.createElement('at-carbon-icon-button');        
         Polymer.dom(removeLink).classList.add('-arc-remove');
-        Polymer.dom(removeLink).innerHTML = "Remove";
+        removeLink.icon = "now:trash";
+        removeLink.color = "red";
         Polymer.dom(removeLink).setAttribute('data-update-path', updatePath);
         Polymer.dom(leafContainer).appendChild(removeLink);
 
@@ -852,7 +844,11 @@
           var remElemParent = Polymer.dom(remElem).parentNode;
           Polymer.dom(remElemParent).removeChild(remElem);
 
-          var updatePath = event.target.getAttribute('data-update-path');
+          var upElement = event.target;
+          while(upElement.nodeName !== "AT-CARBON-ICON-BUTTON") {
+            upElement = upElement.parentElement;
+          }
+          var updatePath = upElement.getAttribute('data-update-path');
           self.removeCondition(updatePath);
         });
 
