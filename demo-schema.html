@@ -11,34 +11,36 @@
 </head>
 
 <body>
-  <div class="vertical layout">
-    <div class="horizontal layout">
-      <h2>Conditions Demo - json schema</h2>
-    </div>
-    <div class="horizontal layout">
-      <at-rule-conditions id="afConditions"></at-rule-conditions>
-    </div>
-
-    <div class="horizontal layout">
-      <div class="vertical layout flex-6">
-        <div class="horizontal layout">
-          <h3>at-rule-conditions value</h3>
-        </div>
-        <div class="horizontal layout">
-          <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
-        </div>
+  <h2>Conditions Demo - json schema</h2>
+  <div>
+    <button onclick="_handleToggleDisable()">Toggle Disable</button>
+  </div>
+  <at-rule-conditions id="afConditions"></at-rule-conditions>
+  
+  <div class="horizontal layout">
+    <div class="vertical layout flex-6">
+      <div class="horizontal layout">
+        <h3>at-rule-conditions value</h3>
       </div>
-      <div class="vertical layout flex-6">
-        <div class="horizontal layout">
-          <h3>at-rule-conditions schema</h3>
-        </div>
-        <div class="horizontal layout">
-          <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
-        </div>
+      <div class="horizontal layout">
+        <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
+      </div>
+    </div>
+    <div class="vertical layout flex-6">
+      <div class="horizontal layout">
+        <h3>at-rule-conditions schema</h3>
+      </div>
+      <div class="horizontal layout">
+        <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
       </div>
     </div>
   </div>
   <script>
+    function _handleToggleDisable(event) {
+      var afConditions = document.getElementById('afConditions');
+      afConditions.disabled = !afConditions.disabled;
+    }
+
     document.addEventListener('WebComponentsReady', function() {
 
       var jsonSchema = {

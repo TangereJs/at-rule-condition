@@ -7,17 +7,14 @@
 
 <dom-module id="at-rule-conditions">
   <template>
-    <style include="at-rule-conditions-styles"></style>
-    <style>
-      /*.debug * {
-        border: 1px solid purple;
-      }*/
+    <style include="at-rule-conditions-styles">
+      :host { 
+        display: block; 
+        box-sizing: border-box; 
+      }
     </style>
-    <div class="debug">
-      <h4 class="conditions-title" hidden$="[[hideLabel]]" >{{label}}</h4>
-      
-      <div id="conditionsHtmlContainer"></div>      
-    </div>
+    <h4 class="conditions-title" hidden$="[[hideLabel]]" >{{label}}</h4>
+    <div id="conditionsHtmlContainer"></div>
   </template>
   <script>
     'use strict';
@@ -117,7 +114,7 @@
       },
 
       valueChanged: function(newValue, oldValue) {
-        if (!this._isReady || !newValue) {
+        if (!this._isReady || !newValue || !this.config) {
           return;
         }
 
@@ -146,47 +143,27 @@
         if (!this._isReady) {
           return;
         }
-        var queryRoot = Polymer.dom(this.$.conditionsHtmlContainer);
-        tmp = queryRoot.querySelectorAll('select');
-        if (tmp.length > 0) {
-          this.pushArray1IntoArray2(tmp, selectElements);
-        }
-        tmp = queryRoot.querySelectorAll('input');
-        if (tmp.length > 0) {
-          this.pushArray1IntoArray2(tmp, inputElements);
-        }
-        tmp = queryRoot.querySelectorAll('button');
-        if (tmp.length > 0) {
-          this.pushArray1IntoArray2(tmp, aElements);
-        }
 
-        if (newValue) {
-          for (selectIndex = 0; selectIndex < selectElements.length; selectIndex += 1) {
-            selectElement = selectElements[selectIndex];
-            Polymer.dom(selectElement).setAttribute('disabled', 'disabled');
+        var queryRoot = Polymer.dom(this.$.conditionsHtmlContainer);
+        var classesList = ['.all-any-none', '.text', '.conditions-menu', '.-arc-remove', '.field', '.operator', '.compareTo', '.value'];
+
+        classesList.forEach(function(className, index) { 
+          tmp = queryRoot.querySelectorAll(className);
+            
+          tmp.forEach(function(element, index) { 
+            element.disabled = newValue;
+          });
+
+          if (className === '.text') {
+            tmp.forEach(function(element, index) { 
+              if (newValue){
+                element.setAttribute('disabled', newValue);
+              } else {
+                element.removeAttribute('disabled', newValue);
+              }
+            });            
           }
-          for (inputIndex = 0; inputIndex < inputElements.length; inputIndex += 1) {
-            inputElement = inputElements[inputIndex];
-            Polymer.dom(inputElement).setAttribute('disabled', 'disabled');
-          }
-          for (aIndex = 0; aIndex < aElements.length; aIndex += 1) {
-            aElement = aElements[aIndex];
-            Polymer.dom(aElement).setAttribute('disabled', 'disabled');
-          }
-        } else {
-          for (selectIndex = 0; selectIndex < selectElements.length; selectIndex += 1) {
-            selectElement = selectElements[selectIndex];
-            Polymer.dom(selectElement).removeAttribute('disabled');
-          }
-          for (inputIndex = 0; inputIndex < inputElements.length; inputIndex += 1) {
-            inputElement = inputElements[inputIndex];
-            Polymer.dom(inputElement).removeAttribute('disabled');
-          }
-          for (aIndex = 0; aIndex < aElements.length; aIndex += 1) {
-            aElement = aElements[aIndex];
-            Polymer.dom(aElement).removeAttribute('disabled');
-          }
-        }
+        });
       },
 
       pushArray1IntoArray2: function(array1, array2) {
