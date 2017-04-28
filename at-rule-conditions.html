@@ -710,6 +710,7 @@
         ];
         var addMenu = document.createElement('at-carbon-menu-button');        
         addMenu.items = menuItems;
+        addMenu.icon = "now:plus"
         Polymer.dom(addMenu).classList.add('conditions-menu');
         Polymer.dom(addMenu).setAttribute('data-update-path', this.createPath(updatePath, 'conditions'));
         addMenu.addEventListener('value-changed', function(event){
