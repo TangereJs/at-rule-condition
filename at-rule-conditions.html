@@ -362,6 +362,7 @@
               case "string":
               case "password":
               case "textarea":
+              case "random":
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("includes", "includes", "select"));
@@ -1085,6 +1086,9 @@
             case "textarea":
               result = document.createElement('at-form-textarea');
               break;
+            case "random":
+              result = document.createElement('at-form-random');
+              break;  
           }
           Polymer.dom(result).classList.add('inline-element');
           result.addEventListener('value-changed', this._handleValueChanged.bind(this));
