@@ -25,20 +25,35 @@
       is: 'at-rule-conditions',
       properties: {
 
+        label: {
+          type: String,
+          value: 'When these conditions are met ...'
+        },
+
+        hideLabel: {
+          type: Boolean,
+          value: false
+        },
+
+        disabled: {
+          type: Boolean,
+          value: false,
+          observer: '_disabledChanged'
+        },
+
         schema: {
           type: Object,
           value: function() {
             return {};
-          },
-          observer: 'schemaChanged'
+          }
         },
 
         config: {
           type: Array,
+          xtype: 'json',
           value: function() {
             return [];
-          },
-          observer: 'configChanged',
+          }
         },
 
         value: {
@@ -48,23 +63,11 @@
               kind: "all",
               conditions: [] // "all is needed because add rule interface is not displayed if conditions object is empty
             };
-          },
-          observer: 'valueChanged'
-        },
-        disabled: {
-          type: Boolean,
-          value: false,
-          observer: 'disabledChanged'
-        },
-        label: {
-          type: String,
-          value: 'When these conditions are met ...'
-        },
-        hideLabel: {
-          type: Boolean,
-          value: false
+          }
         }
       },
+
+      observers: [ '_handleConfigSchemaValueChanged(config, schema, value)' ],
       
       ready: function() {
         var self = this;
@@ -93,41 +96,76 @@
         this._isReady = true;
       },
 
-      schemaChanged: function(newValue, oldValue) {
-        if (!this._isReady) {
-          return;
+      _handleConfigSchemaValueChanged: function(newConfig, newSchema, newValue) {
+        var config;
+        var schema;
+        var value;
+
+        if (!this._isReady || this._handlingInProgress) { return; }
+                        
+        function isString(obj) {
+          return Object.prototype.toString.apply(obj) === "[object String]";
         }
 
-        if (this.__conditionsHelperFunctions.isSchemaValid(newValue)) {
-          var t_config = this.__conditionsHelperFunctions.schemaToConfig(newValue);
+        // *ij* newConfig can either be an array object [] or a JSON string of an array "[]"
+        config = newConfig;
+        if (isString(newConfig)) {
+          try {
+            config = JSON.parse(newConfig);
+            this._handlingInProgress = true;
+            this.config = config;
+            this._handlingInProgress = false;
+          } catch (e) {
+            console.log(e);
+            config = null;
+          }
+        }
+
+        // newSchema can iether be an object { properties: {} } or a JSON string of an object { "properties": {} }
+        schema = newSchema;
+        if (isString(newSchema)) {
+          try {
+            schema = JSON.parse(newSchema);
+            this._handlingInProgress = true;
+            this.schema = schema;
+            this._handlingInProgress = false;
+          } catch (e) {
+            console.log(e);
+            schema = null;
+          }
+        }
+
+        if (!config && !schema) { return; }
+
+        // newValue can iether be an array [] or a JSON string of an array "[]"
+        value = newValue;
+        if (isString(newValue)) {
+          try {
+            value = JSON.parse(newValue);
+            this._handlingInProgress = true;
+            this.value = value;
+            this._handlingInProgress = false;
+          } catch (e) {
+            console.log(e);
+            schema = null;
+          }
+        }
+
+        if (this.__conditionsHelperFunctions.isSchemaValid(schema)) {
+          // convert schema to config and use config and value
+          var t_config = this.__conditionsHelperFunctions.schemaToConfig(schema);
+          this._handlingInProgress = true;
           this.config = t_config.value.fields;
-          this.value = t_config.value.data;
-        }
-      },
-
-      configChanged: function(newValue, oldValue) {
-        if (!this._isReady || !newValue) {
-          return;
+          this._handlingInProgress = false;
+          // this.value = t_config.value.data;
         }
 
-        this._rebuildConditionsHtml();
-      },
-
-      valueChanged: function(newValue, oldValue) {
-        if (!this._isReady || !newValue || !this.config) {
-          return;
-        }
-
-        this._rebuildConditionsHtml();
-      },
-
-      _rebuildConditionsHtml: function() {
         Polymer.dom(this.$.conditionsHtmlContainer).innerHTML = '';
-        this.buildConditionsHtml(this.$.conditionsHtmlContainer, this.config, this.value);
-        this.disabledChanged(this.disabled);
+        this.buildConditionsHtml(this.$.conditionsHtmlContainer, config, value);
+        this._disabledChanged(this.disabled);
       },
 
-      disabledChanged: function(newValue, oldValue) {
+      _disabledChanged: function(newValue, oldValue) {
         var
           selectIndex,
           selectElement,
