@@ -90,7 +90,7 @@
           self.set(updatePath, value, self.value);
           self.fire('value-changed', {
             value: self.value
-          });
+          }, { bubbles: false });
         });
 
         this._isReady = true;
@@ -100,7 +100,7 @@
         var config;
         var schema;
         var value;
-
+        
         if (!this._isReady || this._handlingInProgress) { return; }
                         
         function isString(obj) {
@@ -109,7 +109,7 @@
 
         // *ij* newConfig can either be an array object [] or a JSON string of an array "[]"
         config = newConfig;
-        if (isString(newConfig)) {
+        if (isString(newConfig) && newConfig !== "") {
           try {
             config = JSON.parse(newConfig);
             this._handlingInProgress = true;
@@ -119,11 +119,13 @@
             console.log(e);
             config = null;
           }
+        } else {
+          config = newConfig;
         }
 
         // newSchema can iether be an object { properties: {} } or a JSON string of an object { "properties": {} }
         schema = newSchema;
-        if (isString(newSchema)) {
+        if (isString(newSchema) && newSchema !== "") {
           try {
             schema = JSON.parse(newSchema);
             this._handlingInProgress = true;
@@ -132,6 +134,19 @@
           } catch (e) {
             console.log(e);
             schema = null;
+          }
+        } else {
+          schema = newSchema.value || newSchema;
+          if (isString(schema)) {
+            try {
+              schema = JSON.parse(schema);
+              this._handlingInProgress = true;
+              this.schema = schema;
+              this._handlingInProgress = false;
+            } catch (e) {
+              console.log(e);
+              schema = null;
+            }
           }
         }
 
@@ -147,8 +162,10 @@
             this._handlingInProgress = false;
           } catch (e) {
             console.log(e);
-            schema = null;
+            value = null;
           }
+        } else {
+          value = newValue;
         }
 
         if (this.__conditionsHelperFunctions.isSchemaValid(schema)) {
@@ -161,7 +178,7 @@
         }
 
         Polymer.dom(this.$.conditionsHtmlContainer).innerHTML = '';
-        this.buildConditionsHtml(this.$.conditionsHtmlContainer, config, value);
+        this.buildConditionsHtml(this.$.conditionsHtmlContainer, this.config, this.value);
         this._disabledChanged(this.disabled);
       },
 
@@ -221,7 +238,7 @@
         conditionData.push(data);
         this.fire('value-changed', {
           value: this.value
-        });
+        }, { bubbles: false });
       },
       // ------------------------------
       // for the specified updatePath removes the data for the condition from conditions array
@@ -255,7 +272,7 @@
 
         this.fire("value-changed", {
           value: this.value
-        });
+        }, { bubbles: false });
       },
       // ------------------------------
       // updates the updatePath for the condition (contains zero or more rules or conditions)
@@ -887,6 +904,7 @@
 
           // debugger;
           var operatorSelect = self.createOperatorSelect(_container, selectedField, data, updatePath);
+          self._handleValueChanged(event);
         });
 
         // ------------------------------
@@ -956,6 +974,7 @@
           var selectedOperatorOption = target.selectedItems[0];
 
           self.createOperatorCompareToSelect(_container, selectedOperatorOption, _data, updatePath);
+          self._handleValueChanged(event);
         });
         if (selectedOperatorOption) {
           this.createOperatorCompareToSelect(htmlContainer, selectedOperatorOption, data, updatePath);
@@ -1020,10 +1039,11 @@
             var target = event.target;
             var parentNode = Polymer.dom(target).parentNode;
             var updatePath = parentNode.getAttribute('data-update-path');
-            var _data = data
+            var _data = data;
             var selectedCompareTo = target.selectedItems[0];
 
             self.createValueHtml(_container, selectedCompareTo, data, updatePath);
+            self._handleValueChanged(event);
           });
 
           var selectedCompareTo = result.selectedItems[0];
@@ -1068,6 +1088,7 @@
           }
           result.xvaluelist = xvaluelist;
           result.value = data.value;
+          result.addEventListener('value-changed', this._handleValueChanged.bind(this));
         } else {
           switch (fieldType) {
             case "boolean":
