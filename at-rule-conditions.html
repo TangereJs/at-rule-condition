@@ -107,74 +107,111 @@
           return Object.prototype.toString.apply(obj) === "[object String]";
         }
 
-        // *ij* newConfig can either be an array object [] or a JSON string of an array "[]"
-        config = newConfig;
+        // *ij* newConfig can either be an array object [] or a JSON string of an array "[]"        
         if (isString(newConfig) && newConfig !== "") {
           try {
-            config = JSON.parse(newConfig);
+            var parsedConfig = JSON.parse(newConfig);
             this._handlingInProgress = true;
-            this.config = config;
+            this.config = parsedConfig;
             this._handlingInProgress = false;
           } catch (e) {
-            console.log(e);
-            config = null;
+            this._handlingInProgress = true;
+            this.config = this.properties.config.value();
+            this._handlingInProgress = false;
           }
-        } else {
-          config = newConfig;
         }
 
         // newSchema can iether be an object { properties: {} } or a JSON string of an object { "properties": {} }
-        schema = newSchema;
         if (isString(newSchema) && newSchema !== "") {
           try {
-            schema = JSON.parse(newSchema);
+            var parsedSchema = JSON.parse(newSchema);
             this._handlingInProgress = true;
-            this.schema = schema;
+            this.schema = parsedSchema;
             this._handlingInProgress = false;
           } catch (e) {
-            console.log(e);
-            schema = null;
-          }
-        } else {
-          schema = newSchema.value || newSchema;
-          if (isString(schema)) {
-            try {
-              schema = JSON.parse(schema);
-              this._handlingInProgress = true;
-              this.schema = schema;
-              this._handlingInProgress = false;
-            } catch (e) {
-              console.log(e);
-              schema = null;
-            }
+            this._handlingInProgress = true;
+            this.schema = this.properties.schema.value();
+            this._handlingInProgress = false;
           }
         }
-
-        if (!config && !schema) { return; }
 
         // newValue can iether be an array [] or a JSON string of an array "[]"
-        value = newValue;
-        if (isString(newValue)) {
+        if (isString(newValue) && newValue !== "") {
           try {
-            value = JSON.parse(newValue);
+            var parsedValue = JSON.parse(newValue);
             this._handlingInProgress = true;
-            this.value = value;
+            this.value = parsedValue;
             this._handlingInProgress = false;
           } catch (e) {
-            console.log(e);
-            value = null;
+            this._handlingInProgress = true;
+            this.value = this.properties.value.value();
+            this._handlingInProgress = false;
           }
-        } else {
-          value = newValue;
         }
 
-        if (this.__conditionsHelperFunctions.isSchemaValid(schema)) {
+        function isArray(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Array]";
+        }
+
+        function checkConfigValid(param) { 
+          return isArray(param);
+        }
+
+        function isObject(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Object]";
+        }
+
+        function checkSchemaValid(param) {
+          if (!isObject(param)) { return false; }
+
+          if (!param.hasOwnProperty('properties')) { return false; }
+
+          if (!isObject(param.properties)) { return false; }
+
+          return true;
+        }
+
+        function checkValueValid(param) {
+          // value {
+          //   kind: "all",
+          //   conditions: []
+          // }
+
+          if (!isObject(param)) { return false; }
+
+          if (!param.hasOwnProperty('kind') || !param.hasOwnProperty('conditions')) { return false; }
+
+          if (!isString(param.kind) || !isArray(param.conditions)) { return false; }
+
+          return true;
+        }
+
+        var isConfigValid = checkConfigValid(this.config);
+        var isSchemaValid = checkSchemaValid(this.schema);
+        var isValueValid = checkValueValid(this.value);
+
+        if (!isValueValid) {
+          this._handlingInProgress = true;
+          this.value = this.properties.value.value();
+          this._handlingInProgress = false;
+        }
+
+        function isSchemaEmpty(schema) {
+          return Object.keys(schema.properties).length === 0;
+        }
+
+        if (isSchemaValid && !isSchemaEmpty(this.schema)) {
+          // use schema
           // convert schema to config and use config and value
-          var t_config = this.__conditionsHelperFunctions.schemaToConfig(schema);
+          var t_config = this.__conditionsHelperFunctions.schemaToConfig(this.schema);
           this._handlingInProgress = true;
           this.config = t_config.value.fields;
           this._handlingInProgress = false;
-          // this.value = t_config.value.data;
+        } else if (!isConfigValid) {
+          // use initial value for config
+          this._handlingInProgress = true;
+          this.config = this.properties.config.value();
+          this._handlingInProgress = false;
         }
 
         Polymer.dom(this.$.conditionsHtmlContainer).innerHTML = '';
