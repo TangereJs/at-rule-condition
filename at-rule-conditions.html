@@ -415,6 +415,18 @@
             indexOfDash // for xtype="code-*"
           ;
 
+          var _anyField = {
+            label: '_any',
+            name: '_any',
+            operators: [
+              this.createOperatorDef("if changed", "ifChanged", "none"),
+              this.createOperatorDef("if not changed", "ifNotChanged", "none"),
+            ],
+            options: []
+          };
+
+          result.value.fields.push(_anyField);
+
           // we want to iterate over all properties of schema.properties
           for (propName in properties) {
             propDef = properties[propName];
@@ -554,6 +566,8 @@
             }
             // end switch (propType)
 
+            field.operators.push(this.createOperatorDef("if changed", "ifChanged", "none"));
+            field.operators.push(this.createOperatorDef("if not changed", "ifNotChanged", "none"));
           }
 
           return result;
@@ -819,13 +833,38 @@
           var conditionData = self.get(updatePath, self.value);
           var index = conditionData.length;
           var newPath = self.createPath(updatePath, index);
+          
+          // initialValue update
+          // previously initialValue was set to empty string because originally strings was the only thing
+          // one was allowed to compare to
+          var propDef;
+          if (aField.name === "_any") {
+            propDef = {
+              type: "string",
+            };
+            initialValue = "";
+
+          } else {
+            propDef = self.schema.properties[aField.name];
+            var initialValue = '';
+            if (propDef.hasOwnProperty('default')) {
+              initialValue = propDef.default;
+            }
+          }
+          
+          // we have special handling for initial boolean values
+          // if initial value is "", "false", "0" or 0 we 'convert' that to false (boolean literal false)
+          // everything else we 'convert' to true
+          if (propDef.type === "boolean") {
+            initialValue = ['', 'false', '0', 0].indexOf(initialValue) > -1 ? false : true;
+          }
 
           if (value === "addCondition") {
             data = {
               name: aField.name,
               operator: aField.operators[0].name,
               compareTo: "text",
-              value: ""
+              value: initialValue
             };
             self.buildLeafHtml(_htmlContainer, _fields, data, newPath);
           } else if (value === "addSubCondition") {
@@ -835,7 +874,7 @@
                 name: aField.name,
                 operator: aField.operators[0].name,
                 compareTo: "text",
-                value: ''
+                value: initialValue
               }]
             };
             self.buildNodeHtml(_htmlContainer, _fields, data, newPath);
@@ -877,7 +916,7 @@
           var levelPath = this.createPath(updatePath, "conditions." + index);
 
           if (isLeaf) {
-            this.buildLeafHtml(conditionsDiv, fields, condition, levelPath);
+            this.buildLeafHtml(conditionsDiv, fields, condition, levelPath); 
           } else {
             this.buildNodeHtml(conditionsDiv, fields, condition, levelPath);
           }
@@ -939,7 +978,6 @@
           var selectedFieldName = target.value;
           var selectedField = self.getFieldByName(selectedFieldName);
 
-          // debugger;
           var operatorSelect = self.createOperatorSelect(_container, selectedField, data, updatePath);
           self._handleValueChanged(event);
         });
