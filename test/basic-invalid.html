@@ -1,0 +1,329 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>at-rule-conditions tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../at-rule-conditions.html"/>
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html"/>
+  </head>
+  <body>
+
+    <test-fixture id="labelUndefined">
+      <template>
+        <at-rule-conditions label="undefined"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="labelNull">
+      <template>
+        <at-rule-conditions label="null"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="labelEmptyString">
+      <template>
+        <at-rule-conditions label=""></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="hideLabelUndefined">
+      <template>
+        <at-rule-conditions hide-label="undefined"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="hideLabelNull">
+      <template>
+        <at-rule-conditions hide-label="null"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="disabledUndefined">
+      <template>
+        <at-rule-conditions disabled="undefined"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="disabledNull">
+      <template>
+        <at-rule-conditions disabled="null"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="schemaIsUndefined">
+      <template>
+        <at-rule-conditions schema="undefined"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="schemaIsNull">
+      <template>
+        <at-rule-conditions schema="null"></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="schemaIs{}">
+      <template>
+        <at-rule-conditions schema='{}'></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="configIsUndefined">
+      <template>
+        <at-rule-conditions config='undefined'></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="configIsNull">
+      <template>
+        <at-rule-conditions config='null'></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="valueIsUndefined">
+      <template>
+        <at-rule-conditions value='undefined'></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="valueIsNull">
+      <template>
+        <at-rule-conditions value='null'></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="propertyTests">
+      <template>
+        <at-rule-conditions></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <script>
+      
+      suite('initial state', function() {
+        
+        test('assert initial state', function() {
+          var elt = fixture('propertyTests');
+
+          assert.equal(elt.label, 'When these conditions are met ...');
+          assert.equal(elt.hideLabel, false);
+          assert.equal(elt.disabled, false);
+
+          assert.deepEqual(elt.schema, {});
+          assert.deepEqual(elt.config, []);
+          assert.deepEqual(elt.value,  { kind: "all", conditions: [] });
+        });
+
+      });
+
+      suite('invalid label values', function() {
+
+        test('label is undefined', function() {
+          var elt = fixture('labelUndefined');
+
+          assert.equal(elt.label, 'undefined');
+        });
+
+        test('label is null', function() {
+          var elt = fixture('labelNull');
+
+          assert.equal(elt.label, 'null');
+        });
+
+        test('label is empty string', function() {
+          var elt = fixture('labelEmptyString');
+
+          assert.equal(elt.label, '');
+        });
+
+      });
+
+      suite('invalid hide label values', function() {
+
+        test('hideLabel is undefined', function() {
+          var elt = fixture('hideLabelUndefined');
+
+          assert.equal(elt.hideLabel, true);
+        });
+
+        test('hideLabel is null', function() {
+          var elt = fixture('hideLabelNull');
+
+          assert.equal(elt.hideLabel, true);
+        });
+
+      });
+
+      suite('invalid disabled values', function() {
+
+        test('disabled is undefined', function() {
+          var elt = fixture('disabledUndefined');
+
+          assert.equal(elt.disabled, true);
+        });
+
+        test('disabled is null', function() {
+          var elt = fixture('disabledNull');
+
+          assert.equal(elt.disabled, true);
+        });
+
+      });
+
+      suite('invalid schema values', function() {
+
+        test('schema is undefined', function() {
+          var elt = fixture('schemaIsUndefined');
+
+          assert.equal(elt.schema, 'undefined');
+        });
+
+        test('schema is null', function() {
+          var elt = fixture('schemaIsNull');
+
+          assert.equal(elt.schema, null);
+        });
+
+        test('schema is {}', function() {
+          var elt = fixture('schemaIs{}');
+
+          assert.deepEqual(elt.schema, {});
+        });
+
+      });
+
+      suite('invalid config values', function() {
+
+        test('config is undefined', function() {
+          var elt = fixture('configIsUndefined');
+          
+          // When property type is array, and value assigned as attribute undefined
+          // property value is evaluated to null
+          assert.equal(elt.config, null);
+        });
+
+        test('config is null', function() {
+          var elt = fixture('configIsNull');
+
+          assert.equal(elt.config, null);
+        });
+
+      });
+
+      suite('invalid value values', function() {
+
+        test('value is undefined', function() {
+          var elt = fixture('valueIsUndefined');
+
+          assert.equal(elt.value, 'undefined');
+        });
+
+        test('value is null', function() {
+          var elt = fixture('valueIsNull');
+
+          assert.equal(elt.value, null);
+        });
+
+      });
+
+      suite('invalid values in code', function () { 
+
+        test('label is undefined', function() {
+          var elt = fixture('propertyTests');
+
+          elt.label = undefined;
+          assert.equal(elt.label, undefined);
+        });
+
+        test('label is null', function() {
+          var elt = fixture('propertyTests');
+
+          elt.label = null;
+          assert.equal(elt.label, null);
+        });
+
+        test('hideLabel is undefined', function() {
+          var elt = fixture('propertyTests');
+
+          elt.hideLabel = undefined;
+          assert.equal(elt.hideLabel, undefined);
+        });
+
+        test('hideLabel is null', function() {
+          var elt = fixture('propertyTests');
+
+          elt.hideLabel = null;
+          assert.equal(elt.hideLabel, null);
+        });
+
+        test('disabled is undefined', function() {
+          var elt = fixture('propertyTests');
+
+          elt.disabled = undefined;
+          assert.equal(elt.disabled, undefined);
+        });
+
+        test('disabled is null', function() {
+          var elt = fixture('propertyTests');
+
+          elt.disabled = null;
+          assert.equal(elt.disabled, null);
+        });
+
+        test('schema is undefined', function() {
+          var elt = fixture('propertyTests');
+
+          elt.schema = undefined;
+          assert.equal(elt.schema, undefined);
+        });
+
+        test('schema is null', function() {
+          var elt = fixture('propertyTests');
+
+          elt.schema = null;
+          assert.equal(elt.schema, null);
+        });
+
+        test('schema is {}', function() {
+          var elt = fixture('propertyTests');
+
+          elt.schema = {};
+          assert.deepEqual(elt.schema, {});
+        });
+
+        test('config is undefined', function() {
+          var elt = fixture('propertyTests');
+
+          elt.config = undefined;
+          assert.equal(elt.config, undefined);
+        });
+
+        test('config is null', function() {
+          var elt = fixture('propertyTests');
+
+          elt.config = null;
+          assert.deepEqual(elt.config, []);
+        });
+
+        test('value is undefined', function() {
+          var elt = fixture('propertyTests');
+
+          elt.value = undefined;
+          assert.equal(elt.value, undefined);
+        });
+
+        test('value is null', function() {
+          var elt = fixture('propertyTests');
+
+          elt.value = null;
+          assert.deepEqual(elt.value, { kind: "all", conditions: [] });
+        });
+
+      });
+
+    </script>
+  </body>
+</html>

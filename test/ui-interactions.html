@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>at-rule-conditions tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../at-rule-conditions.html"/>
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html"/>
+  </head>
+  <body>
+
+    <test-fixture id="propertyTests">
+      <template>
+        <at-rule-conditions></at-rule-conditions>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('label interactions', function() {
+
+        test('changing label changes text in html', function() {
+          var elt = fixture('propertyTests');
+          assert.equal(elt.label, 'When these conditions are met ...');
+          
+          var lElt = Polymer.dom(elt.root).querySelector('h4');
+          assert.equal(lElt.textContent, 'When these conditions are met ...');
+
+          elt.label = "Lorem ipsum";
+          assert.equal(elt.label, 'Lorem ipsum');
+          assert.equal(lElt.textContent, 'Lorem ipsum');
+        });
+
+        test("hideLabel hides label but doesn't change text in html", function() {
+          var elt = fixture('propertyTests');
+          assert.equal(elt.hideLabel, false);
+
+          var lElt = Polymer.dom(elt.root).querySelector('h4');
+          assert.equal(lElt.textContent, 'When these conditions are met ...');
+          assert.equal(lElt.hasAttribute('hidden'), false);
+
+          var displayValue = window.getComputedStyle(lElt).getPropertyValue('display');
+          assert.equal(displayValue, 'block');
+
+          elt.hideLabel = true;
+          assert.equal(elt.hideLabel, true);
+          assert.equal(lElt.hasAttribute('hidden'), true);
+
+          displayValue = window.getComputedStyle(lElt).getPropertyValue('display');
+          assert.equal(displayValue, 'none');
+
+          assert.equal(lElt.textContent, 'When these conditions are met ...');
+
+          elt.hideLabel = false;
+          assert.equal(elt.hideLabel, false);
+          assert.equal(lElt.hasAttribute('hidden'), false);
+
+          displayValue = window.getComputedStyle(lElt).getPropertyValue('display');
+          assert.equal(displayValue, 'block');
+
+          assert.equal(lElt.textContent, 'When these conditions are met ...');
+        });
+
+        test('disabled reduces opacity of label', function() {
+          var elt = fixture('propertyTests');
+          assert.equal(elt.disabled, false);
+          
+          var lElt = Polymer.dom(elt.root).querySelector('h4');
+          assert.equal(lElt.hasAttribute('disabled'), false);
+
+          // assert opacity value
+          var opacityValue = window.getComputedStyle(lElt).getPropertyValue('opacity');
+          assert.equal(opacityValue, '1');
+
+          elt.disabled = true;
+          assert.equal(elt.disabled, true);
+          assert.equal(lElt.hasAttribute('disabled'), true);
+
+          opacityValue = window.getComputedStyle(lElt).getPropertyValue('opacity');
+          assert.equal(opacityValue, '0.5');
+        });
+
+      });
+      
+      suite('schema, config and value interactions', function() {
+        var schema = {
+          properties: {
+            text1: {
+              type: 'string'
+            },
+            text2: {
+              type: 'string'
+            },
+            text3: {
+              type: 'string'
+            }
+          }
+        };
+
+        var expConfig = [{"label":"_any","name":"_any","operators":[{"label":"if changed","name":"ifChanged","fieldType":"none"},{"label":"if not changed","name":"ifNotChanged","fieldType":"none"}],"options":[]},{"label":"Text1","name":"text1","operators":[{"label":"is present","name":"present","fieldType":"none"},{"label":"is blank","name":"blank","fieldType":"none"},{"label":"includes","name":"includes","fieldType":"select"},{"label":"matches regex","name":"matchesRegex","fieldType":"select"},{"label":"is equal to","name":"equalTo","fieldType":"select"},{"label":"it not equal to","name":"notEqualTo","fieldType":"select"},{"label":"is less than","name":"lessThan","fieldType":"select"},{"label":"is less than or equal to","name":"lessThanEqual","fieldType":"select"},{"label":"is greater than","name":"greaterThan","fieldType":"select"},{"label":"is greater than or equal to","name":"greaterThanEqual","fieldType":"select"},{"label":"if changed","name":"ifChanged","fieldType":"none"},{"label":"if not changed","name":"ifNotChanged","fieldType":"none"}],"options":[{"label":"Static","name":"static","fieldType":"string"},{"label":"Field","name":"field","options":[{"label":"Text2","name":"text2"},{"label":"Text3","name":"text3"}],"fieldType":"select"}]},{"label":"Text2","name":"text2","operators":[{"label":"is present","name":"present","fieldType":"none"},{"label":"is blank","name":"blank","fieldType":"none"},{"label":"includes","name":"includes","fieldType":"select"},{"label":"matches regex","name":"matchesRegex","fieldType":"select"},{"label":"is equal to","name":"equalTo","fieldType":"select"},{"label":"it not equal to","name":"notEqualTo","fieldType":"select"},{"label":"is less than","name":"lessThan","fieldType":"select"},{"label":"is less than or equal to","name":"lessThanEqual","fieldType":"select"},{"label":"is greater than","name":"greaterThan","fieldType":"select"},{"label":"is greater than or equal to","name":"greaterThanEqual","fieldType":"select"},{"label":"if changed","name":"ifChanged","fieldType":"none"},{"label":"if not changed","name":"ifNotChanged","fieldType":"none"}],"options":[{"label":"Static","name":"static","fieldType":"string"},{"label":"Field","name":"field","options":[{"label":"Text1","name":"text1"},{"label":"Text3","name":"text3"}],"fieldType":"select"}]},{"label":"Text3","name":"text3","operators":[{"label":"is present","name":"present","fieldType":"none"},{"label":"is blank","name":"blank","fieldType":"none"},{"label":"includes","name":"includes","fieldType":"select"},{"label":"matches regex","name":"matchesRegex","fieldType":"select"},{"label":"is equal to","name":"equalTo","fieldType":"select"},{"label":"it not equal to","name":"notEqualTo","fieldType":"select"},{"label":"is less than","name":"lessThan","fieldType":"select"},{"label":"is less than or equal to","name":"lessThanEqual","fieldType":"select"},{"label":"is greater than","name":"greaterThan","fieldType":"select"},{"label":"is greater than or equal to","name":"greaterThanEqual","fieldType":"select"},{"label":"if changed","name":"ifChanged","fieldType":"none"},{"label":"if not changed","name":"ifNotChanged","fieldType":"none"}],"options":[{"label":"Static","name":"static","fieldType":"string"},{"label":"Field","name":"field","options":[{"label":"Text1","name":"text1"},{"label":"Text2","name":"text2"}],"fieldType":"select"}]}];
+
+        var value = {
+           "kind": "all",
+           "conditions": [
+            {
+             "name": "_any",
+             "operator": "ifChanged",
+             "compareTo": "text",
+             "value": ""
+            },
+            {
+             "name": "text1",
+             "operator": "lessThan",
+             "compareTo": "text",
+             "value": "aaaaa"
+            },
+            {
+             "name": "text2",
+             "operator": "equalTo",
+             "compareTo": "text",
+             "value": "bbbbb"
+            },
+            {
+             "name": "text3",
+             "operator": "greaterThan",
+             "compareTo": "text",
+             "value": "ccccc"
+            }
+           ]
+        };
+
+        test("empty schema doesn't create elements in html and doesn't update configuration", function() {
+          var schema = {
+            properties: {}
+          };
+
+          var elt = fixture('propertyTests');
+          elt.schema = schema;
+
+          var nodeCount = elt.$.conditionsHtmlContainer.childNodes.length;
+          assert.equal(nodeCount, 0);
+
+          assert.deepEqual(elt.config, []);
+        });
+
+        test("setting a populated schema doesn't create elements but creates a valid configuration", function() {
+          var elt = fixture('propertyTests');
+          elt.schema = schema;
+
+          var nodeCount = elt.$.conditionsHtmlContainer.childNodes.length;
+          assert.equal(nodeCount, 1);
+
+          var containerNode = elt.$.conditionsHtmlContainer.childNodes[0];
+          assert.equal(containerNode.childNodes.length, 3);
+
+          // assert configuration value
+          var config = elt.config;
+
+          // config is an object with 5 keys
+          function isArray(obj) {
+            return Object.prototype.toString.apply(obj) === "[object Array]";
+          }
+          assert.equal(isArray(config), true);
+
+          assert.equal(config.length, 4);
+          assert.deepEqual(config, expConfig);
+        });
+
+        test("setting the value and not schema doesn't have an effect", function() {
+          var elt = fixture('propertyTests');
+          elt.value = value;
+
+          var nodeCount = elt.$.conditionsHtmlContainer.childNodes.length;
+          assert.equal(nodeCount, 0);
+
+          assert.deepEqual(elt.config, []);
+        });
+
+        test("setting schema and value creates elements in html", function() {
+          var elt = fixture("propertyTests");
+
+          var nodeCount = elt.$.conditionsHtmlContainer.childNodes.length;
+          assert.equal(nodeCount, 0);
+
+          elt.schema = schema;
+          elt.value = value;
+
+          assert.deepEqual(elt.config, expConfig);
+
+          nodeCount = elt.$.conditionsHtmlContainer.childNodes.length;
+          assert.equal(nodeCount, 1);
+
+          containerNode = elt.$.conditionsHtmlContainer.childNodes[0];
+          assert.equal(containerNode.childNodes.length, 7);
+
+          var ruleNodes = Polymer.dom(containerNode).querySelectorAll('.rule');
+          assert.equal(ruleNodes.length, 4);
+        });
+
+      });
+    </script>
+  </body>
+</html>

@@ -96,6 +96,40 @@
         this._isReady = true;
       },
 
+      _isString: function(obj) {
+        return Object.prototype.toString.apply(obj) === "[object String]";
+      },
+
+      _isArray: function(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Array]";
+      },
+
+      _checkConfigValid: function(param) {
+        return Object.prototype.toString.apply(param) === "[object Array]";
+      },
+      
+      _isObject: function(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Object]";
+      },
+
+      _checkSchemaValid: function(param) {
+        if (!this._isObject(param)) { return false; }
+        if (!param.hasOwnProperty('properties')) { return false; }
+        if (!this._isObject(param.properties)) { return false; }
+        return true;
+      },
+
+      _checkValueValid: function(param) {
+        if (!this._isObject(param)) { return false; }
+        if (!param.hasOwnProperty('kind') || !param.hasOwnProperty('conditions')) { return false; }
+        if (!this._isString(param.kind) || !this._isArray(param.conditions)) { return false; }
+        return true;
+      },
+
+      _isSchemaEmpty: function(schema) {
+        return Object.keys(schema.properties).length === 0;
+      },
+
       _handleConfigSchemaValueChanged: function(newConfig, newSchema, newValue) {
         var config;
         var schema;
@@ -103,12 +137,8 @@
         
         if (!this._isReady || this._handlingInProgress) { return; }
                         
-        function isString(obj) {
-          return Object.prototype.toString.apply(obj) === "[object String]";
-        }
-
         // *ij* newConfig can either be an array object [] or a JSON string of an array "[]"        
-        if (isString(newConfig) && newConfig !== "") {
+        if (this._isString(newConfig) && newConfig !== "") {
           try {
             var parsedConfig = JSON.parse(newConfig);
             this._handlingInProgress = true;
@@ -122,7 +152,7 @@
         }
 
         // newSchema can iether be an object { properties: {} } or a JSON string of an object { "properties": {} }
-        if (isString(newSchema) && newSchema !== "") {
+        if (this._isString(newSchema) && newSchema !== "") {
           try {
             var parsedSchema = JSON.parse(newSchema);
             this._handlingInProgress = true;
@@ -136,7 +166,7 @@
         }
 
         // newValue can iether be an array [] or a JSON string of an array "[]"
-        if (isString(newValue) && newValue !== "") {
+        if (this._isString(newValue) && newValue !== "") {
           try {
             var parsedValue = JSON.parse(newValue);
             this._handlingInProgress = true;
@@ -149,46 +179,9 @@
           }
         }
 
-        function isArray(obj) {
-          return Object.prototype.toString.apply(obj) === "[object Array]";
-        }
-
-        function checkConfigValid(param) { 
-          return isArray(param);
-        }
-
-        function isObject(obj) {
-          return Object.prototype.toString.apply(obj) === "[object Object]";
-        }
-
-        function checkSchemaValid(param) {
-          if (!isObject(param)) { return false; }
-
-          if (!param.hasOwnProperty('properties')) { return false; }
-
-          if (!isObject(param.properties)) { return false; }
-
-          return true;
-        }
-
-        function checkValueValid(param) {
-          // value {
-          //   kind: "all",
-          //   conditions: []
-          // }
-
-          if (!isObject(param)) { return false; }
-
-          if (!param.hasOwnProperty('kind') || !param.hasOwnProperty('conditions')) { return false; }
-
-          if (!isString(param.kind) || !isArray(param.conditions)) { return false; }
-
-          return true;
-        }
-
-        var isConfigValid = checkConfigValid(this.config);
-        var isSchemaValid = checkSchemaValid(this.schema);
-        var isValueValid = checkValueValid(this.value);
+        var isConfigValid = this._checkConfigValid(this.config);
+        var isSchemaValid = this._checkSchemaValid(this.schema);
+        var isValueValid  = this._checkValueValid(this.value);
 
         if (!isValueValid) {
           this._handlingInProgress = true;
@@ -196,11 +189,7 @@
           this._handlingInProgress = false;
         }
 
-        function isSchemaEmpty(schema) {
-          return Object.keys(schema.properties).length === 0;
-        }
-
-        if (isSchemaValid && !isSchemaEmpty(this.schema)) {
+        if (isSchemaValid && !this._isSchemaEmpty(this.schema)) {
           // use schema
           // convert schema to config and use config and value
           var t_config = this.__conditionsHelperFunctions.schemaToConfig(this.schema);
@@ -213,6 +202,8 @@
           this.config = this.properties.config.value();
           this._handlingInProgress = false;
         }
+
+        if (Object.keys(this.config).length === 0) return;
 
         Polymer.dom(this.$.conditionsHtmlContainer).innerHTML = '';
         this.buildConditionsHtml(this.$.conditionsHtmlContainer, this.config, this.value);
