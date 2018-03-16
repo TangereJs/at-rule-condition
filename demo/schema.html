@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>at-rule-conditions Demo</title>
 
-  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="at-rule-conditions.html">
-  <link rel="import" href="../layout/layout.html">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../at-rule-conditions.html">
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
+  <style is="custom-style" include="at-core-style-classes"></style>
 </head>
 
 <body>
@@ -16,23 +17,15 @@
     <button onclick="_handleToggleDisable()">Toggle Disable</button>
   </div>
   <at-rule-conditions id="afConditions"></at-rule-conditions>
-  
-  <div class="horizontal layout">
-    <div class="vertical layout flex-6">
-      <div class="horizontal layout">
-        <h3>at-rule-conditions value</h3>
-      </div>
-      <div class="horizontal layout">
-        <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
-      </div>
+
+  <div class="layout-horizontal">
+    <div class="layout-flex-6">
+      <h3>at-rule-conditions value</h3>
+      <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
     </div>
-    <div class="vertical layout flex-6">
-      <div class="horizontal layout">
-        <h3>at-rule-conditions schema</h3>
-      </div>
-      <div class="horizontal layout">
-        <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
-      </div>
+    <div class="layout-flex-6">
+      <h3>at-rule-conditions schema</h3>
+      <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
     </div>
   </div>
   <script>
@@ -245,6 +238,7 @@
         afConditions.schema = schema;
       });
     });
+
   </script>
 </body>
 

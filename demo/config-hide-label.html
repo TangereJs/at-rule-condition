@@ -5,52 +5,51 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>at-rule-conditions Demo</title>
 
-  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="at-rule-conditions.html">
-  <link rel="import" href="../layout/layout.html">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../at-rule-conditions.html">
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
 
-  <style media="screen">
+  <style is="custom-style" include="at-core-style-classes">
     .textarea {
       width: 100%;
       min-height: 300px;
       height: 100%;
     }
+
   </style>
 </head>
 
 <body>
-  <div class="vertical layout">
-    <div class="horizontal layout">
-      <div class="vertical layout flex-8">
-        <h2>Conditions Demo - static schema</h2>
-        <at-rule-conditions id="afConditions1" hide-label="true"></at-rule-conditions>
-      </div>
-      <div class="vertical layout flex-4">
-        <h3>Conditions value echo:</h3>
-        <textarea class="textarea" id="conditionsValueEcho1" disabled></textarea>
-      </div>
+  <div class="layout-horizontal">
+    <div class="layout-flex-8">
+      <h2>Conditions Demo - static schema</h2>
+      <at-rule-conditions id="afConditions1" hide-label="true"></at-rule-conditions>
     </div>
-
-    <div class="horizontal layout">
-      <div class="vertical layout flex-8">
-        <h2>Conditions Demo - json schema</h2>
-        <at-rule-conditions id="afConditions2" hide-label="true"> </at-rule-conditions>
-      </div>
-      <div class="vertical layout flex-4">
-        <h3>Conditions value echo:</h3>
-        <textarea class="textarea" id="conditionsValueEcho2" disabled></textarea>
-      </div>
+    <div class="layout-flex-4">
+      <h3>Conditions value echo:</h3>
+      <textarea class="textarea" id="conditionsValueEcho1" disabled></textarea>
     </div>
+  </div>
 
-    <div class="horizontal layout">
-      <div class="vertical layout flex-8">
-        <h2>Conditions Demo - static schema, disabled</h2>
-        <at-rule-conditions id="afConditions3" disabled hide-label="true"></at-rule-conditions>
-      </div>
-      <div class="vertical layout flex-4">
-        <h3>Conditions value echo:</h3>
-        <textarea class="textarea" id="conditionsValueEcho3" disabled></textarea>
-      </div>
+  <div class="layout-horizontal">
+    <div class="layout-flex-8">
+      <h2>Conditions Demo - json schema</h2>
+      <at-rule-conditions id="afConditions2" hide-label="true"> </at-rule-conditions>
+    </div>
+    <div class="layout-flex-4">
+      <h3>Conditions value echo:</h3>
+      <textarea class="textarea" id="conditionsValueEcho2" disabled></textarea>
+    </div>
+  </div>
+
+  <div class="layout-horizontal">
+    <div class="layout-flex-8">
+      <h2>Conditions Demo - static schema, disabled</h2>
+      <at-rule-conditions id="afConditions3" disabled hide-label="true"></at-rule-conditions>
+    </div>
+    <div class="layout-flex-4">
+      <h3>Conditions value echo:</h3>
+      <textarea class="textarea" id="conditionsValueEcho3" disabled></textarea>
     </div>
   </div>
   <script>
@@ -219,6 +218,7 @@
       });
 
     });
+
   </script>
 </body>
 

@@ -5,37 +5,24 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>at-rule-conditions Demo</title>
 
-  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="at-rule-conditions.html">
-  <link rel="import" href="../layout/layout.html">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../at-rule-conditions.html">
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
+  <style is="custom-style" include="at-core-style-classes"></style>
 </head>
 
 <body>
-  <div class="vertical layout">
-    <div class="horizontal layout">
-      <h2>Conditions Demo - json schema</h2>
-    </div>
-    <div class="horizontal layout">
-      <at-rule-conditions id="afConditions"></at-rule-conditions>
-    </div>
+  <h2>Conditions Demo - json schema</h2>
+  <at-rule-conditions id="afConditions"></at-rule-conditions>
 
-    <div class="horizontal layout">
-      <div class="vertical layout flex-6">
-        <div class="horizontal layout">
-          <h3>at-rule-conditions value</h3>
-        </div>
-        <div class="horizontal layout">
-          <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
-        </div>
-      </div>
-      <div class="vertical layout flex-6">
-        <div class="horizontal layout">
-          <h3>at-rule-conditions schema</h3>
-        </div>
-        <div class="horizontal layout">
-          <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
-        </div>
-      </div>
+  <div class="horizontal layout">
+    <div class="layout-flex-6">
+      <h3>at-rule-conditions value</h3>
+      <textarea id="conditionsValueEcho" rows="30" cols="50"></textarea>
+    </div>
+    <div class="layout-flex-6">
+      <h3>at-rule-conditions schema</h3>
+      <textarea id="conditionsSchema" rows="30" cols="50"></textarea>
     </div>
   </div>
   <script>
@@ -92,13 +79,13 @@
             "title": "Enum demo",
             "xvaluelist": [{
               title: "Value 1",
-              value:"value1"
+              value: "value1"
             }, {
               title: "Value 2",
-              value:"value2"
+              value: "value2"
             }, {
               title: "Value 3",
-              value:"value3"
+              value: "value3"
             }]
           },
           "lookupDemo": {
@@ -126,13 +113,13 @@
             "title": "Radio demo",
             "xvaluelist": [{
               title: "Value 1",
-              value:"value1"
+              value: "value1"
             }, {
               title: "Value 2",
-              value:"value2"
+              value: "value2"
             }, {
               title: "Value 3",
-              value:"value3"
+              value: "value3"
             }]
           },
           "sectionDemo": {
@@ -275,6 +262,7 @@
         afConditions.schema = schema;
       });
     });
+
   </script>
 </body>
 
