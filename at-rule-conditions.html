@@ -1032,7 +1032,7 @@
         var selectedOperatorOption = operatorSelect.selectedItems.length ? operatorSelect.selectedItems[0] : false;      
         var self = this;
 
-        operatorSelect.addEventListener('value-changed', function(event) {
+        operatorSelect.addEventListener('selected-items-changed', function(event) {
           var _container = htmlContainer;
           var _data = data;
           var updatePath = _container.getAttribute('data-update-path');
