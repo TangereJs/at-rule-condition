@@ -70,29 +70,6 @@
       observers: [ '_handleConfigSchemaValueChanged(config, schema, value)' ],
       
       ready: function() {
-        var self = this;
-        // ------------------------------
-        // attach to the change event of the container and listen to change event
-        // this is part of infrastructure to centralize value updates
-        // and manual triggering of value-change event
-        // ------------------------------
-        var conditionsHtmlContainer = this.$.conditionsHtmlContainer;
-
-        // this handles select and input elements
-        conditionsHtmlContainer.addEventListener('change', function(event) {
-          event.stopPropagation();
-          var target = event.target;
-          if (target.is) {
-            return;
-          }
-          var updatePath = target.getAttribute('data-update-path');
-          var value = target.value;
-          self.set(updatePath, value, self.value);
-          self.fire('value-changed', {
-            value: self.value
-          }, { bubbles: false });
-        });
-
         this._isReady = true;
       },
 
@@ -1136,14 +1113,7 @@
         var fieldType = selectedCompareTo.fieldType;
         var options = selectedCompareTo.options;
 
-        if (fieldType === "none") {
-          result = document.createElement('input');
-          Polymer.dom(result).setAttribute('type', 'hidden');
-
-        } else if (fieldType === "text") {
-          result = document.createElement('input');
-          Polymer.dom(result).setAttribute('type', 'text');
-        } else if (fieldType === "select") {
+        if (fieldType === "select") {
           result = document.createElement('at-form-lookup');
           var xvaluelist = [];
           for (var i = 0; i < options.length; i++) {
