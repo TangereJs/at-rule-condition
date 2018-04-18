@@ -421,10 +421,10 @@
               case "image":
               case "code":
               case "marked":
-                field.operators.push(this.createOperatorDef("is present", "present", "none"));
-                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
                 field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
 
                 field.options.push(this.createFieldOption("Static", "static", undefined, propType));
                 if (hasCompareTargets) {
@@ -436,12 +436,12 @@
               case "textarea":
               case "random":
               case "cron":
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("includes", "includes", "select"));
                 field.operators.push(this.createOperatorDef("matches regex", "matchesRegex", "select"));
-                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
-                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
                 field.operators.push(this.createOperatorDef("is less than", "lessThan", "select"));
                 field.operators.push(this.createOperatorDef("is less than or equal to", "lessThanEqual", "select"));
                 field.operators.push(this.createOperatorDef("is greater than", "greaterThan", "select"));
@@ -457,10 +457,10 @@
               case "time":
               case "datetime":
               case "daterange":
-                field.operators.push(this.createOperatorDef("is present", "present", "none"));
-                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
                 field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+                field.operators.push(this.createOperatorDef("is present", "present", "none"));
+                field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
                 field.operators.push(this.createOperatorDef("is less than", "lessThan", "select"));
                 field.operators.push(this.createOperatorDef("is less than or equal to", "lessThanEqual", "select"));
                 field.operators.push(this.createOperatorDef("is greater than", "greaterThan", "select"));
@@ -490,16 +490,14 @@
                 break;
               case "enum":
               case "radio":
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
 
                 var
                   enumOptions = this.getEnumOptions(propDef),
                   hasEnumOptions = enumOptions.length > 0;
-
-                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
-                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
-
 
                 if (hasEnumOptions) {
                   field.options.push(this.createFieldOption("Static", "static", enumOptions, propType));
@@ -511,14 +509,14 @@
                 }
                 break;
               case "lookup":
+                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
+                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
+
                 field.operators.push(this.createOperatorDef("is present", "present", "none"));
                 field.operators.push(this.createOperatorDef("is blank", "blank", "none"));
 
                 enumOptions = this.getEnumOptions(propDef);
                 hasEnumOptions = enumOptions.length > 1;
-
-                field.operators.push(this.createOperatorDef("is equal to", "equalTo", "select"));
-                field.operators.push(this.createOperatorDef("it not equal to", "notEqualTo", "select"));
 
                 if (hasEnumOptions) {
                   field.options.push(this.createFieldOption("Static", "static", enumOptions, "select"));
@@ -945,6 +943,12 @@
           var target = event.target;
           var selectedFieldName = target.value;
           var selectedField = self.getFieldByName(selectedFieldName);
+
+          // we want first operator in the operators list for the selected field to be selected by default
+          // for _any field this is ifchanged; for other fields this is equalTo
+          data.operator = selectedField.operators[0].name;
+          // we need to update rule-conditions value because previous value for operator property is invalid
+          self.set(updatePath, data);
 
           var operatorSelect = self.createOperatorSelect(_container, selectedField, data, updatePath);
           self._handleValueChanged(event);
