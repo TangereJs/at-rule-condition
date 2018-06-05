@@ -298,7 +298,21 @@
           var elt = fixture('propertyTests');
 
           elt.config = undefined;
-          assert.equal(elt.config, undefined);
+          
+          var pVer = parseInt(Polymer.version);
+          if (pVer == 1) {
+            // In polymer 1.x
+            // Observers are not invoked until all dependent properties are defined (!== undefined). 
+            // So each dependent properties should have a default value defined in properties (or otherwise be initialized to a non-undefined value) to ensure the observer is called.
+
+            assert.equal(elt.config, undefined);
+
+          } else {
+            // In Polymer 2.x
+            // Multi-property observers and computed properties run once at initialization if any dependencies are defined.
+            // After that, the observers run whenever there is an observable change to any dependency.
+            assert.deepEqual(elt.config, []);
+          }
         });
 
         test('config is null', function() {
@@ -312,7 +326,21 @@
           var elt = fixture('propertyTests');
 
           elt.value = undefined;
-          assert.equal(elt.value, undefined);
+
+          var pVer = parseInt(Polymer.version);
+          if (pVer == 1) {
+            // In polymer 1.x
+            // Observers are not invoked until all dependent properties are defined (!== undefined). 
+            // So each dependent properties should have a default value defined in properties (or otherwise be initialized to a non-undefined value) to ensure the observer is called.
+
+            assert.equal(elt.value, undefined);
+          
+          } else {
+            // In Polymer 2.x
+            // Multi-property observers and computed properties run once at initialization if any dependencies are defined.
+            // After that, the observers run whenever there is an observable change to any dependency.
+            assert.deepEqual(elt.value, { kind: "all", conditions: [] });
+          }
         });
 
         test('value is null', function() {
